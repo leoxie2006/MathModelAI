@@ -1,12 +1,7 @@
-## Plugins
+# 插件示例
 
-This directory contains optional plugins/extensions that integrate CyberStrikeAI with other tools.
+本目录用于放置可选插件或外部工具集成。
 
-- `burp-suite/`: Burp Suite extensions
+当前只保留一个占位示例：
 
-### Burp Suite Extension
-
-- **Path**: `plugins/burp-suite/cyberstrikeai-burp-extension/`
-- **Build output**: `plugins/burp-suite/cyberstrikeai-burp-extension/dist/cyberstrikeai-burp-extension.jar`
-- **Docs**: see the plugin folder `README.md` / `README.zh-CN.md`
-
+- `math-modeling-adapter/`：数学建模插件扩展方向说明。

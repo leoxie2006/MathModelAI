@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-# CyberStrikeAI 一键部署启动脚本
+# MathModelAI 一键部署启动脚本
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT_DIR"
 
@@ -63,7 +63,7 @@ show_progress() {
 
 echo ""
 echo "=========================================="
-echo "  CyberStrikeAI 一键部署启动脚本"
+echo "  MathModelAI 一键部署启动脚本"
 echo "  （默认 HTTPS 自签证书；纯 HTTP 请用: $0 --http）"
 echo "=========================================="
 echo ""
@@ -84,7 +84,7 @@ sleep 1
 CONFIG_FILE="$ROOT_DIR/config.yaml"
 VENV_DIR="$ROOT_DIR/venv"
 REQUIREMENTS_FILE="$ROOT_DIR/requirements.txt"
-BINARY_NAME="cyberstrike-ai"
+BINARY_NAME="mathmodel-ai"
 
 # 检查配置文件
 if [ ! -f "$CONFIG_FILE" ]; then
@@ -390,10 +390,10 @@ main() {
     success "所有准备工作完成！"
     echo ""
     if [ "$USE_HTTPS" -eq 1 ]; then
-        info "启动 CyberStrikeAI 服务器（HTTPS + HTTP/2，自签证书）..."
+        info "启动 MathModelAI 服务器（HTTPS + HTTP/2，自签证书）..."
         note "纯 HTTP 启动请使用: $0 --http"
     else
-        info "启动 CyberStrikeAI 服务器（HTTP）..."
+        info "启动 MathModelAI 服务器（HTTP）..."
     fi
     echo "=========================================="
     echo ""
