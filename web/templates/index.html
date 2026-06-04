@@ -7,7 +7,6 @@
     <link rel="icon" type="image/png" href="/static/logo.png">
     <link rel="shortcut icon" type="image/png" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/c2.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.19.0/css/xterm.css">
 </head>
 <body>
@@ -179,7 +178,6 @@
                             <span data-i18n="nav.projects">项目管理</span>
                         </div>
                     </div>
-                    <div class="nav-item" data-page="vulnerabilities">
                         <div class="nav-item-content" data-title="漏洞管理" onclick="switchPage('vulnerabilities')" data-i18n="nav.vulnerabilities" data-i18n-attr="data-title" data-i18n-skip-text="true">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
@@ -196,7 +194,6 @@
                             <span data-i18n="nav.chatFiles">文件管理</span>
                         </div>
                     </div>
-                    <div class="nav-item" data-page="webshell">
                         <div class="nav-item-content" data-title="WebShell管理" onclick="switchPage('webshell')" data-i18n="nav.webshell" data-i18n-attr="data-title" data-i18n-skip-text="true">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="4 17 10 11 4 5"></polyline>
@@ -206,30 +203,6 @@
                         </div>
                     </div>
                     <!-- C2 侧栏入口（带子菜单） -->
-                    <div class="nav-item nav-item-has-submenu" data-page="c2" id="nav-c2">
-                        <div class="nav-item-content" data-title="C2" onclick="window.toggleSubmenu('c2')" data-i18n="nav.c2" data-i18n-attr="data-title" data-i18n-skip-text="true">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path>
-                                <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path>
-                                <circle cx="12" cy="12" r="2"></circle>
-                                <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path>
-                                <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19"></path>
-                            </svg>
-                            <span data-i18n="nav.c2">C2</span>
-                            <svg class="submenu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div class="nav-submenu" id="submenu-c2">
-                            <div class="nav-submenu-item" data-page="c2" onclick="switchPage('c2')" data-i18n="nav.c2Manage">C2 管理</div>
-                            <div class="nav-submenu-item" data-page="c2-listeners" onclick="switchPage('c2-listeners')" data-i18n="nav.c2Listeners">监听器</div>
-                            <div class="nav-submenu-item" data-page="c2-sessions" onclick="switchPage('c2-sessions')" data-i18n="nav.c2Sessions">会话</div>
-                            <div class="nav-submenu-item" data-page="c2-tasks" onclick="switchPage('c2-tasks')" data-i18n="nav.c2Tasks">任务</div>
-                            <div class="nav-submenu-item" data-page="c2-payloads" onclick="switchPage('c2-payloads')" data-i18n="nav.c2Payloads">Payload</div>
-                            <div class="nav-submenu-item" data-page="c2-events" onclick="switchPage('c2-events')" data-i18n="nav.c2Events">事件</div>
-                            <div class="nav-submenu-item" data-page="c2-profiles" onclick="switchPage('c2-profiles')" data-i18n="nav.c2Profiles">流量伪装</div>
-                        </div>
-                    </div>
                     <div class="nav-item nav-item-has-submenu" data-page="mcp">
                         <div class="nav-item-content" data-title="MCP" onclick="window.toggleSubmenu('mcp')" data-i18n="nav.mcp" data-i18n-attr="data-title" data-i18n-skip-text="true">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -4297,7 +4270,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/i18next@23.11.5/i18next.min.js"></script>
     <script src="/static/js/i18n.js"></script>
-    <script src="/static/js/builtin-tools.js"></script>
     <script src="/static/js/auth.js"></script>
     <script src="/static/js/notifications.js"></script>
     <script src="/static/js/info-collect.js"></script>
@@ -4309,20 +4281,14 @@
     <script src="/static/js/chat.js"></script>
     <script src="/static/js/hitl.js"></script>
     <script src="/static/js/settings.js"></script>
-    <script src="/static/js/audit.js"></script>
-    <script src="/static/js/wechat-robot.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm@4.19.0/lib/xterm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.js"></script>
-    <script src="/static/js/terminal.js"></script>
     <script src="/static/js/knowledge.js"></script>
     <script src="/static/js/skills.js"></script>
     <script src="/static/js/projects.js"></script>
-    <script src="/static/js/vulnerability.js?v=12"></script>
-    <script src="/static/js/webshell.js"></script>
     <script src="/static/js/chat-files.js"></script>
     <script src="/static/js/tasks.js"></script>
     <script src="/static/js/roles.js"></script>
-    <script src="/static/js/c2.js"></script>
 </body>
 </html>
 
