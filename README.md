@@ -14,8 +14,6 @@ This branch keeps only the architecture plus a small set of example files. The o
 - `skills/`: Agent Skills examples.
 - `tools/`: MCP tool YAML examples.
 - `knowledge_base/`: math-modeling knowledge examples.
-- `mcp-servers/`: external MCP service example.
-- `plugins/`: plugin extension example.
 - `docs/`: architecture notes and getting started guide.
 
 ## Quick Start

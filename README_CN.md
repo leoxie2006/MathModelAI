@@ -14,8 +14,6 @@ MathModelAI 是一个基于现有 Go + Web + MCP + 多智能体架构整理出�
 - `skills/`：Agent Skills 示例，当前保留问题抽象和模型验证两个技能包。
 - `tools/`：MCP 工具模板，当前保留 Python 执行和 Shell 执行两个通用工具。
 - `knowledge_base/`：数学建模知识库示例。
-- `mcp-servers/`：外部 MCP 服务示例。
-- `plugins/`：插件扩展示例。
 - `docs/`：架构说明和快速开始。
 
 ## 快速开始

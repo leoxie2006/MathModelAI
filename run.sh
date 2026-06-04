@@ -208,26 +208,13 @@ setup_python_env() {
         if [ $PIP_EXIT_CODE -eq 0 ]; then
             success "Python 依赖安装完成"
         else
-            # 检查是否是 angr 安装失败（需要 Rust）
-            if grep -q "angr" "$PIP_LOG" && grep -q "Rust compiler\|can't find Rust" "$PIP_LOG"; then
-                warning "angr 安装失败（需要 Rust 编译器）"
-                echo ""
-                info "angr 是可选依赖，主要用于二进制分析工具"
-                info "如果需要使用 angr，请先安装 Rust："
-                echo "  macOS:   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
-                echo "  Ubuntu:  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
-                echo "  或访问:  https://rustup.rs/"
-                echo ""
-                info "其他依赖已安装，可以继续使用（部分工具可能不可用）"
-            else
-                warning "部分 Python 依赖安装失败，但可以继续尝试运行"
-                warning "如果遇到问题，请检查错误信息并手动安装缺失的依赖"
-                # 显示最后几行错误信息
-                echo ""
-                info "错误详情（最后 10 行）："
-                tail -n 10 "$PIP_LOG" | sed 's/^/  /'
-                echo ""
-            fi
+            warning "部分 Python 依赖安装失败，但可以继续尝试运行"
+            warning "如果遇到问题，请检查错误信息并手动安装缺失的依赖"
+            # 显示最后几行错误信息
+            echo ""
+            info "错误详情（最后 10 行）："
+            tail -n 10 "$PIP_LOG" | sed 's/^/  /'
+            echo ""
         fi
         rm -f "$PIP_LOG"
     else

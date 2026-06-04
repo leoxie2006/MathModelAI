@@ -10,7 +10,5 @@
 - `skills/`：Agent Skills 技能包。
 - `tools/`：MCP 工具 YAML 模板。
 - `knowledge_base/`：RAG 知识库 Markdown 内容。
-- `mcp-servers/`：外部 MCP 服务示例。
-- `plugins/`：可选插件示例。
 
 原始完整样例已移到 `example` 分支保留；当前分支只作为 MathModelAI 的轻量开发骨架。
