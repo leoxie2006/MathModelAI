@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 
 	einoembedopenai "github.com/cloudwego/eino-ext/components/embedding/openai"
 	"github.com/cloudwego/eino/components/embedding"

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"

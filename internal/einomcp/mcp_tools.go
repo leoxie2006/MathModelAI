@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"cyberstrike-ai/internal/agent"
-	"cyberstrike-ai/internal/security"
+	"mathmodel-ai/internal/agent"
+	"mathmodel-ai/internal/security"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"

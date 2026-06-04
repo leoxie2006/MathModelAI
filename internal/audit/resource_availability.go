@@ -3,7 +3,7 @@ package audit
 import (
 	"strings"
 
-	"cyberstrike-ai/internal/database"
+	"mathmodel-ai/internal/database"
 )
 
 var auditActionsResourceRemoved = map[string]bool{
@@ -56,27 +56,6 @@ func resourceStillExists(db *database.DB, resourceType, resourceID string) (bool
 	case "conversation":
 		ok, err := db.ConversationExists(resourceID)
 		return ok, err == nil
-	case "vulnerability":
-		_, err := db.GetVulnerability(resourceID)
-		if err != nil {
-			return false, strings.Contains(err.Error(), "不存在")
-		}
-		return true, true
-	case "batch_queue":
-		_, err := db.GetBatchQueue(resourceID)
-		return err == nil, true
-	case "c2_listener":
-		_, err := db.GetC2Listener(resourceID)
-		return err == nil, true
-	case "c2_session":
-		_, err := db.GetC2Session(resourceID)
-		return err == nil, true
-	case "c2_task":
-		_, err := db.GetC2Task(resourceID)
-		return err == nil, true
-	case "webshell_connection":
-		c, err := db.GetWebshellConnection(resourceID)
-		return err == nil && c != nil, true
 	case "tool_execution":
 		_, err := db.GetToolExecution(resourceID)
 		return err == nil, true

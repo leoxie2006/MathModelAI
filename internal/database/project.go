@@ -27,7 +27,7 @@ func ValidateFactKey(key string) error {
 	return nil
 }
 
-// Project 渗透测试项目（跨对话共享黑板）。
+// Project 建模项目（跨对话共享黑板）。
 type Project struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`

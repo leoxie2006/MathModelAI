@@ -12,7 +12,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"cyberstrike-ai/internal/audit"
+	"mathmodel-ai/internal/audit"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"cyberstrike-ai/internal/einomcp"
-	"cyberstrike-ai/internal/security"
+	"mathmodel-ai/internal/einomcp"
+	"mathmodel-ai/internal/security"
 
 	"github.com/cloudwego/eino/adk/filesystem"
 	"github.com/cloudwego/eino/compose"
@@ -52,7 +52,7 @@ type einoStreamingShellWrap struct {
 	outputChunk func(toolName, toolCallID, chunk string)
 	// toolTimeoutMinutes 与 agent.tool_timeout_minutes 对齐；>0 时对单次 execute 套用 context 超时（与 MCP 工具经 executeToolViaMCP 行为一致）。0 表示仅依赖上层 ctx（如整任务 10h 上限）。
 	toolTimeoutMinutes int
-	// recordMonitor 在 execute 流结束后写入 tool_executions 并 recorder(executionId)，使「渗透测试详情」与常规 MCP 一致。
+	// recordMonitor 在 execute 流结束后写入 tool_executions 并 recorder(executionId)，使「建模详情」与常规 MCP 一致。
 	recordMonitor func(command, stdout string, success bool, invokeErr error)
 }
 

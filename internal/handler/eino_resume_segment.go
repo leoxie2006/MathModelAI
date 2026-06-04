@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"cyberstrike-ai/internal/agent"
-	"cyberstrike-ai/internal/multiagent"
+	"mathmodel-ai/internal/agent"
+	"mathmodel-ai/internal/multiagent"
 )
 
 func (h *AgentHandler) einoRunRetryMaxAttempts() int {

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"cyberstrike-ai/internal/agent"
-	"cyberstrike-ai/internal/einomcp"
+	"mathmodel-ai/internal/agent"
+	"mathmodel-ai/internal/einomcp"
 
 	"github.com/cloudwego/eino/adk"
 	"github.com/cloudwego/eino/schema"

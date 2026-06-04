@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"cyberstrike-ai/internal/config"
-	"cyberstrike-ai/internal/database"
+	"mathmodel-ai/internal/config"
+	"mathmodel-ai/internal/database"
 )
 
 // AppendSystemPromptBlock 将附加块追加到 system prompt。

@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"cyberstrike-ai/internal/app"
-	"cyberstrike-ai/internal/config"
-	"cyberstrike-ai/internal/logger"
+	"mathmodel-ai/internal/app"
+	"mathmodel-ai/internal/config"
+	"mathmodel-ai/internal/logger"
 	"flag"
 	"fmt"
 	"os"
@@ -32,7 +32,7 @@ func main() {
 		cp = "config.yaml"
 	}
 	if strings.HasPrefix(cp, "-") {
-		fmt.Fprintf(os.Stderr, "无效的 -config 路径 %q。\n若同时需要 HTTPS，请写成: ./cyberstrike-ai --https -config config.yaml（-config 后必须是 yaml 文件路径）。\n", cp)
+		fmt.Fprintf(os.Stderr, "无效的 -config 路径 %q。\n若同时需要 HTTPS，请写成: ./mathmodel-ai --https -config config.yaml（-config 后必须是 yaml 文件路径）。\n", cp)
 		os.Exit(2)
 	}
 	cfg, err := config.Load(cp)

@@ -9,12 +9,12 @@ import (
 	"sync"
 	"time"
 
-	"cyberstrike-ai/internal/agent"
-	"cyberstrike-ai/internal/config"
-	"cyberstrike-ai/internal/einomcp"
-	"cyberstrike-ai/internal/openai"
-	"cyberstrike-ai/internal/project"
-	"cyberstrike-ai/internal/reasoning"
+	"mathmodel-ai/internal/agent"
+	"mathmodel-ai/internal/config"
+	"mathmodel-ai/internal/einomcp"
+	"mathmodel-ai/internal/openai"
+	"mathmodel-ai/internal/project"
+	"mathmodel-ai/internal/reasoning"
 
 	einoopenai "github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/adk"
@@ -23,7 +23,7 @@ import (
 )
 
 // einoSingleAgentName 与 ChatModelAgent.Name 一致，供流式事件映射主对话区。
-const einoSingleAgentName = "cyberstrike-eino-single"
+const einoSingleAgentName = "mathmodel-eino-single"
 
 // RunEinoSingleChatModelAgent 使用 Eino adk.NewChatModelAgent + adk.NewRunner.Run（官方 Quick Start 的 Query 同属 Runner API；此处用历史 + 用户消息切片等价于多轮 Query）。
 // 与 RunDeepAgent 共享 runEinoADKAgentLoop 的 SSE 映射与 MCP 桥。
@@ -180,7 +180,7 @@ func RunEinoSingleChatModelAgent(
 		EmitInternalEvents: true,
 	}
 	ins := project.AppendSystemPromptBlock(ag.EinoSingleAgentSystemInstruction(), systemPromptExtra)
-	ins = project.AppendVisionImageAnalysisIfReady(ins, appCfg.Vision.Ready())
+	ins = project.AppendVisionImageAnalysisIfReady(ins, false)
 	ins = injectToolNamesOnlyInstruction(ctx, ins, mainTools, singleToolSearchActive)
 	if logger != nil {
 		names := collectToolNames(ctx, mainTools)

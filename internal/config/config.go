@@ -20,7 +20,6 @@ type Config struct {
 	Log         LogConfig             `yaml:"log"`
 	MCP         MCPConfig             `yaml:"mcp"`
 	OpenAI      OpenAIConfig          `yaml:"openai"`
-	FOFA        FofaConfig            `yaml:"fofa,omitempty" json:"fofa,omitempty"`
 	Agent       AgentConfig           `yaml:"agent"`
 	Hitl        HitlConfig            `yaml:"hitl,omitempty" json:"hitl,omitempty"`
 	Security    SecurityConfig        `yaml:"security"`
@@ -29,15 +28,12 @@ type Config struct {
 	Audit       AuditConfig           `yaml:"audit,omitempty" json:"audit,omitempty"`
 	ExternalMCP ExternalMCPConfig     `yaml:"external_mcp,omitempty"`
 	Knowledge   KnowledgeConfig       `yaml:"knowledge,omitempty"`
-	C2          C2Config              `yaml:"c2,omitempty" json:"c2,omitempty"` // 内置 C2 总开关；未配置时默认启用
-	Robots      RobotsConfig          `yaml:"robots,omitempty" json:"robots,omitempty"`         // 企业微信/钉钉/飞书等机器人配置
 	RolesDir    string                `yaml:"roles_dir,omitempty" json:"roles_dir,omitempty"`   // 角色配置文件目录（新方式）
 	Roles       map[string]RoleConfig `yaml:"roles,omitempty" json:"roles,omitempty"`           // 向后兼容：支持在主配置文件中定义角色
 	SkillsDir   string                `yaml:"skills_dir,omitempty" json:"skills_dir,omitempty"` // Skills配置文件目录
 	AgentsDir   string                `yaml:"agents_dir,omitempty" json:"agents_dir,omitempty"` // 多代理子 Agent Markdown 定义目录（*.md，YAML front matter）
 	MultiAgent  MultiAgentConfig      `yaml:"multi_agent,omitempty" json:"multi_agent,omitempty"`
 	Project     ProjectConfig         `yaml:"project,omitempty" json:"project,omitempty"`
-	Vision      VisionConfig          `yaml:"vision,omitempty" json:"vision,omitempty"`
 }
 
 // ProjectConfig 项目黑板（跨对话共享事实）配置。
@@ -185,7 +181,7 @@ func (c MultiAgentEinoCallbacksOtelConfig) ServiceNameEffective() string {
 	if s != "" {
 		return s
 	}
-	return "cyberstrike-ai"
+	return "mathmodel-ai"
 }
 
 func (c MultiAgentEinoCallbacksOtelConfig) SampleRatioEffective() float64 {
@@ -432,66 +428,6 @@ type MultiAgentAPIUpdate struct {
 	ToolSearchAlwaysVisibleTools *[]string `json:"tool_search_always_visible_tools,omitempty"`
 }
 
-// RobotsConfig 机器人配置（企业微信、钉钉、飞书、微信 iLink 等）
-type RobotsConfig struct {
-	Session  RobotSessionConfig  `yaml:"session,omitempty" json:"session,omitempty"`   // 机器人会话隔离策略
-	Wechat   RobotWechatConfig   `yaml:"wechat,omitempty" json:"wechat,omitempty"`     // 微信（iLink 扫码绑定）
-	Wecom    RobotWecomConfig    `yaml:"wecom,omitempty" json:"wecom,omitempty"`       // 企业微信
-	Dingtalk RobotDingtalkConfig `yaml:"dingtalk,omitempty" json:"dingtalk,omitempty"` // 钉钉
-	Lark     RobotLarkConfig     `yaml:"lark,omitempty" json:"lark,omitempty"`         // 飞书
-}
-
-// RobotWechatConfig 微信 iLink 机器人配置（个人微信 ClawBot / iLink 协议）
-type RobotWechatConfig struct {
-	Enabled        bool   `yaml:"enabled" json:"enabled"`
-	BotToken       string `yaml:"bot_token,omitempty" json:"bot_token,omitempty"`
-	ILinkBotID     string `yaml:"ilink_bot_id,omitempty" json:"ilink_bot_id,omitempty"`
-	ILinkUserID    string `yaml:"ilink_user_id,omitempty" json:"ilink_user_id,omitempty"`
-	BaseURL        string `yaml:"base_url,omitempty" json:"base_url,omitempty"`               // 默认 https://ilinkai.weixin.qq.com
-	BotType        string `yaml:"bot_type,omitempty" json:"bot_type,omitempty"`               // get_bot_qrcode 参数，默认 3
-	BotAgent       string `yaml:"bot_agent,omitempty" json:"bot_agent,omitempty"`             // base_info.bot_agent
-	GetUpdatesBuf  string `yaml:"get_updates_buf,omitempty" json:"get_updates_buf,omitempty"` // 长轮询游标（运行时）
-}
-
-// RobotSessionConfig 机器人会话隔离策略
-type RobotSessionConfig struct {
-	StrictUserIdentity *bool `yaml:"strict_user_identity,omitempty" json:"strict_user_identity,omitempty"` // true 时只允许真实用户标识，不允许会话/群 ID 兜底
-}
-
-// StrictUserIdentityEnabled 返回是否启用严格用户身份模式；未配置时默认 true。
-func (c RobotSessionConfig) StrictUserIdentityEnabled() bool {
-	if c.StrictUserIdentity == nil {
-		return true
-	}
-	return *c.StrictUserIdentity
-}
-
-// RobotWecomConfig 企业微信机器人配置
-type RobotWecomConfig struct {
-	Enabled        bool   `yaml:"enabled" json:"enabled"`
-	Token          string `yaml:"token" json:"token"`                       // 回调 URL 校验 Token
-	EncodingAESKey string `yaml:"encoding_aes_key" json:"encoding_aes_key"` // EncodingAESKey
-	CorpID         string `yaml:"corp_id" json:"corp_id"`                   // 企业 ID
-	Secret         string `yaml:"secret" json:"secret"`                     // 应用 Secret
-	AgentID        int64  `yaml:"agent_id" json:"agent_id"`                 // 应用 AgentId
-}
-
-// RobotDingtalkConfig 钉钉机器人配置
-type RobotDingtalkConfig struct {
-	Enabled                    bool   `yaml:"enabled" json:"enabled"`
-	ClientID                   string `yaml:"client_id" json:"client_id"`                                       // 应用 Key (AppKey)
-	ClientSecret               string `yaml:"client_secret" json:"client_secret"`                               // 应用 Secret
-	AllowConversationIDFallback bool   `yaml:"allow_conversation_id_fallback" json:"allow_conversation_id_fallback"` // sender_id 缺失时是否允许回退到会话 ID
-}
-
-// RobotLarkConfig 飞书机器人配置
-type RobotLarkConfig struct {
-	Enabled                 bool   `yaml:"enabled" json:"enabled"`
-	AppID                   string `yaml:"app_id" json:"app_id"`                                 // 应用 App ID
-	AppSecret               string `yaml:"app_secret" json:"app_secret"`                         // 应用 App Secret
-	VerifyToken             string `yaml:"verify_token" json:"verify_token"`                     // 事件订阅 Verification Token（可选）
-	AllowChatIDFallback     bool   `yaml:"allow_chat_id_fallback" json:"allow_chat_id_fallback"` // 用户 ID 缺失时是否允许回退到 chat_id
-}
 
 type ServerConfig struct {
 	Host string `yaml:"host" json:"host"`
@@ -570,12 +506,6 @@ func (c OpenAIReasoningConfig) AllowClientReasoningEffective() bool {
 	return *c.AllowClientReasoning
 }
 
-type FofaConfig struct {
-	// Email 为 FOFA 账号邮箱；APIKey 为 FOFA API Key（建议使用只读权限的 Key）
-	Email   string `yaml:"email,omitempty" json:"email,omitempty"`
-	APIKey  string `yaml:"api_key,omitempty" json:"api_key,omitempty"`
-	BaseURL string `yaml:"base_url,omitempty" json:"base_url,omitempty"` // 默认 https://fofa.info/api/v1/search/all
-}
 
 type SecurityConfig struct {
 	Tools               []ToolConfig `yaml:"tools,omitempty"`                 // 向后兼容：支持在主配置文件中定义工具
@@ -927,22 +857,22 @@ func PrintGeneratedPasswordWarning(password string, persisted bool, persistErr s
 	}
 
 	if persisted {
-		fmt.Println("[CyberStrikeAI] ✅ 已为您自动生成并写入 Web 登录密码。")
+		fmt.Println("[MathModelAI] ✅ 已为您自动生成并写入 Web 登录密码。")
 	} else {
 		if persistErr != "" {
-			fmt.Printf("[CyberStrikeAI] ⚠️ 无法自动写入配置文件中的密码: %s\n", persistErr)
+			fmt.Printf("[MathModelAI] ⚠️ 无法自动写入配置文件中的密码: %s\n", persistErr)
 		} else {
-			fmt.Println("[CyberStrikeAI] ⚠️ 无法自动写入配置文件中的密码。")
+			fmt.Println("[MathModelAI] ⚠️ 无法自动写入配置文件中的密码。")
 		}
 		fmt.Println("请手动将以下随机密码写入 config.yaml 的 auth.password：")
 	}
 
 	fmt.Println("----------------------------------------------------------------")
-	fmt.Println("CyberStrikeAI Auto-Generated Web Password")
+	fmt.Println("MathModelAI Auto-Generated Web Password")
 	fmt.Printf("Password: %s\n", password)
-	fmt.Println("WARNING: Anyone with this password can fully control CyberStrikeAI.")
+	fmt.Println("WARNING: Anyone with this password can fully control MathModelAI.")
 	fmt.Println("Please store it securely and change it in config.yaml as soon as possible.")
-	fmt.Println("警告：持有此密码的人将拥有对 CyberStrikeAI 的完全控制权限。")
+	fmt.Println("警告：持有此密码的人将拥有对 MathModelAI 的完全控制权限。")
 	fmt.Println("请妥善保管，并尽快在 config.yaml 中修改 auth.password！")
 	fmt.Println("----------------------------------------------------------------")
 }
@@ -1053,11 +983,11 @@ func PrintMCPConfigJSON(mcp MCPConfig) {
 	serverEntry["type"] = "http"
 	out := map[string]interface{}{
 		"mcpServers": map[string]interface{}{
-			"cyberstrike-ai": serverEntry,
+			"mathmodel-ai": serverEntry,
 		},
 	}
 	b, _ := json.MarshalIndent(out, "", "  ")
-	fmt.Println("[CyberStrikeAI] MCP 配置（可复制到 Cursor / Claude Code 使用）：")
+	fmt.Println("[MathModelAI] MCP 配置（可复制到 Cursor / Claude Code 使用）：")
 	fmt.Println("  Cursor: 放入 ~/.cursor/mcp.json 的 mcpServers，或项目 .cursor/mcp.json")
 	fmt.Println("  Claude Code: 放入 .mcp.json 或 ~/.claude.json 的 mcpServers")
 	fmt.Println("----------------------------------------------------------------")
@@ -1220,7 +1150,6 @@ func LoadRoleFromFile(path string) (*RoleConfig, error) {
 }
 
 func Default() *Config {
-	strictRobotIdentity := true
 	return &Config{
 		Server: ServerConfig{
 			Host: "0.0.0.0",
@@ -1263,11 +1192,6 @@ func Default() *Config {
 				Enabled:        &on,
 			}
 		}(),
-		Robots: RobotsConfig{
-			Session: RobotSessionConfig{
-				StrictUserIdentity: &strictRobotIdentity,
-			},
-		},
 		Knowledge: KnowledgeConfig{
 			Enabled:  true,
 			BasePath: "knowledge_base",
@@ -1298,34 +1222,6 @@ func Default() *Config {
 	}
 }
 
-// C2Config 内置 C2 模块开关（与知识库 enabled 语义一致：关闭后不初始化监听器、不注册 C2 MCP 工具）。
-type C2Config struct {
-	// Enabled 为 nil 表示未写配置，按 true 处理（兼容旧 config.yaml）
-	Enabled *bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
-}
-
-// EnabledEffective 返回是否启用 C2；未显式配置时默认启用。
-func (c C2Config) EnabledEffective() bool {
-	if c.Enabled == nil {
-		return true
-	}
-	return *c.Enabled
-}
-
-// C2Public 返回给前端的 C2 状态（仅标量）。
-type C2Public struct {
-	Enabled bool `json:"enabled"`
-}
-
-// Public 将内部配置转为 API 响应。
-func (c C2Config) Public() C2Public {
-	return C2Public{Enabled: c.EnabledEffective()}
-}
-
-// C2APIUpdate 设置页/API 更新 C2 开关。
-type C2APIUpdate struct {
-	Enabled bool `json:"enabled"`
-}
 
 // KnowledgeConfig 知识库配置
 type KnowledgeConfig struct {

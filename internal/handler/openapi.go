@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"cyberstrike-ai/internal/database"
-	"cyberstrike-ai/internal/storage"
+	"mathmodel-ai/internal/database"
+	"mathmodel-ai/internal/storage"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -42,11 +42,11 @@ func (h *OpenAPIHandler) GetOpenAPISpec(c *gin.Context) {
 	spec := map[string]interface{}{
 		"openapi": "3.0.0",
 		"info": map[string]interface{}{
-			"title":       "CyberStrikeAI API",
-			"description": "AI驱动的自动化安全测试平台API文档",
+			"title":       "MathModelAI API",
+			"description": "AI驱动的自动化建模平台API文档",
 			"version":     "1.0.0",
 			"contact": map[string]interface{}{
-				"name": "CyberStrikeAI",
+				"name": "MathModelAI",
 			},
 		},
 		"servers": []map[string]interface{}{
@@ -71,7 +71,7 @@ func (h *OpenAPIHandler) GetOpenAPISpec(c *gin.Context) {
 						"title": map[string]interface{}{
 							"type":        "string",
 							"description": "对话标题",
-							"example":     "Web应用安全测试",
+							"example":     "Web应用建模",
 						},
 						"projectId": map[string]interface{}{
 							"type":        "string",
@@ -100,7 +100,7 @@ func (h *OpenAPIHandler) GetOpenAPISpec(c *gin.Context) {
 						"title": map[string]interface{}{
 							"type":        "string",
 							"description": "对话标题",
-							"example":     "Web应用安全测试",
+							"example":     "Web应用建模",
 						},
 						"createdAt": map[string]interface{}{
 							"type":        "string",
@@ -1165,7 +1165,7 @@ func (h *OpenAPIHandler) GetOpenAPISpec(c *gin.Context) {
 				"post": map[string]interface{}{
 					"tags":        []string{"对话管理"},
 					"summary":     "创建对话",
-					"description": "创建一个新的安全测试对话。\n**重要说明**：\n- ✅ 创建的对话会**立即保存到数据库**\n- ✅ 前端页面会**自动刷新**显示新对话\n- ✅ 与前端创建的对话**完全一致**\n**创建对话的两种方式**：\n**方式1（推荐）：** 直接使用 `/api/eino-agent` 发送消息，**不提供** `conversationId` 参数，系统会自动创建新对话并发送消息。这是最简单的方式，一步完成创建和发送。\n**方式2：** 先调用此端点创建空对话，然后使用返回的 `conversationId` 调用 `/api/eino-agent` 发送消息。适用于需要先创建对话，稍后再发送消息的场景。\n**示例**：\n```json\n{\n  \"title\": \"Web应用安全测试\"\n}\n```",
+					"description": "创建一个新的建模对话。\n**重要说明**：\n- ✅ 创建的对话会**立即保存到数据库**\n- ✅ 前端页面会**自动刷新**显示新对话\n- ✅ 与前端创建的对话**完全一致**\n**创建对话的两种方式**：\n**方式1（推荐）：** 直接使用 `/api/eino-agent` 发送消息，**不提供** `conversationId` 参数，系统会自动创建新对话并发送消息。这是最简单的方式，一步完成创建和发送。\n**方式2：** 先调用此端点创建空对话，然后使用返回的 `conversationId` 调用 `/api/eino-agent` 发送消息。适用于需要先创建对话，稍后再发送消息的场景。\n**示例**：\n```json\n{\n  \"title\": \"Web应用建模\"\n}\n```",
 					"operationId": "createConversation",
 					"requestBody": map[string]interface{}{
 						"required": true,
@@ -1943,7 +1943,7 @@ func (h *OpenAPIHandler) GetOpenAPISpec(c *gin.Context) {
 				"post": map[string]interface{}{
 					"tags":        []string{"批量任务"},
 					"summary":     "添加任务到队列",
-					"description": "向批量任务队列添加新任务。任务会添加到队列末尾，按照队列顺序依次执行。每个任务会创建一个独立的对话，支持完整的状态跟踪。\n**任务格式**：\n任务内容是一个字符串，描述要执行的安全测试任务。例如：\n- \"扫描 http://example.com 的SQL注入漏洞\"\n- \"对 192.168.1.1 进行端口扫描\"\n- \"检测 https://target.com 的XSS漏洞\"\n**使用示例**：\n```json\n{\n  \"task\": \"扫描 http://example.com 的SQL注入漏洞\"\n}\n```",
+					"description": "向批量任务队列添加新任务。任务会添加到队列末尾，按照队列顺序依次执行。每个任务会创建一个独立的对话，支持完整的状态跟踪。\n**任务格式**：\n任务内容是一个字符串，描述要执行的建模任务。例如：\n- \"扫描 http://example.com 的SQL注入漏洞\"\n- \"对 192.168.1.1 进行端口扫描\"\n- \"检测 https://target.com 的XSS漏洞\"\n**使用示例**：\n```json\n{\n  \"task\": \"扫描 http://example.com 的SQL注入漏洞\"\n}\n```",
 					"operationId": "addBatchTask",
 					"parameters": []map[string]interface{}{
 						{
@@ -1966,7 +1966,7 @@ func (h *OpenAPIHandler) GetOpenAPISpec(c *gin.Context) {
 									"properties": map[string]interface{}{
 										"task": map[string]interface{}{
 											"type":        "string",
-											"description": "任务内容，描述要执行的安全测试任务（必需）",
+											"description": "任务内容，描述要执行的建模任务（必需）",
 											"example":     "扫描 http://example.com 的SQL注入漏洞",
 										},
 									},
@@ -2759,7 +2759,7 @@ func (h *OpenAPIHandler) GetOpenAPISpec(c *gin.Context) {
 				"get": map[string]interface{}{
 					"tags":        []string{"角色管理"},
 					"summary":     "列出角色",
-					"description": "获取所有安全测试角色",
+					"description": "获取所有建模角色",
 					"operationId": "getRoles",
 					"responses": map[string]interface{}{
 						"200": map[string]interface{}{
@@ -2789,7 +2789,7 @@ func (h *OpenAPIHandler) GetOpenAPISpec(c *gin.Context) {
 				"post": map[string]interface{}{
 					"tags":        []string{"角色管理"},
 					"summary":     "创建角色",
-					"description": "创建一个新的安全测试角色",
+					"description": "创建一个新的建模角色",
 					"operationId": "createRole",
 					"requestBody": map[string]interface{}{
 						"required": true,
@@ -6344,17 +6344,6 @@ func (h *OpenAPIHandler) GetConversationResults(c *gin.Context) {
 		return
 	}
 
-	// 获取漏洞列表
-	vulnList, err := h.db.ListVulnerabilities(1000, 0, database.VulnerabilityListFilter{ConversationID: conversationID})
-	if err != nil {
-		h.logger.Warn("获取漏洞列表失败", zap.Error(err))
-		vulnList = []*database.Vulnerability{}
-	}
-	vulnerabilities := make([]database.Vulnerability, len(vulnList))
-	for i, v := range vulnList {
-		vulnerabilities[i] = *v
-	}
-
 	// 获取执行结果（从MCP执行记录中获取）
 	executionResults := []map[string]interface{}{}
 	for _, msg := range messages {
@@ -6388,7 +6377,6 @@ func (h *OpenAPIHandler) GetConversationResults(c *gin.Context) {
 	response := map[string]interface{}{
 		"conversationId":   conv.ID,
 		"messages":         messages,
-		"vulnerabilities":  vulnerabilities,
 		"executionResults": executionResults,
 	}
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"cyberstrike-ai/internal/agent"
+	"mathmodel-ai/internal/agent"
 
 	"github.com/cloudwego/eino/adk"
 	"github.com/cloudwego/eino/components/tool"

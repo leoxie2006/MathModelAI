@@ -397,7 +397,7 @@ func (s *Server) handleInitialize(msg *Message) *Message {
 			Sampling: map[string]interface{}{},
 		},
 		ServerInfo: ServerInfo{
-			Name:    "CyberStrikeAI",
+			Name:    "MathModelAI",
 			Version: "1.0.0",
 		},
 	}
@@ -1087,7 +1087,7 @@ func (s *Server) initDefaultPrompts() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// 网络安全测试提示词
+	// 网络建模提示词
 	s.prompts["security_scan"] = &Prompt{
 		Name:        "security_scan",
 		Description: "生成网络安全扫描任务的提示词",
@@ -1097,10 +1097,10 @@ func (s *Server) initDefaultPrompts() {
 		},
 	}
 
-	// 渗透测试提示词
+	// 建模提示词
 	s.prompts["penetration_test"] = &Prompt{
 		Name:        "penetration_test",
-		Description: "生成渗透测试任务的提示词",
+		Description: "生成建模任务的提示词",
 		Arguments: []PromptArgument{
 			{Name: "target", Description: "测试目标", Required: true},
 			{Name: "scope", Description: "测试范围", Required: false},
@@ -1190,7 +1190,7 @@ func (s *Server) generatePromptMessages(prompt *Prompt, args map[string]interfac
 		content := fmt.Sprintf(`请对目标 %s 执行%s安全扫描。包括：
 1. 端口扫描和服务识别
 2. 漏洞检测
-3. Web应用安全测试
+3. Web应用建模
 4. 生成详细的安全报告`, target, scanType)
 
 		messages = append(messages, PromptMessage{
@@ -1202,11 +1202,11 @@ func (s *Server) generatePromptMessages(prompt *Prompt, args map[string]interfac
 		target, _ := args["target"].(string)
 		scope, _ := args["scope"].(string)
 
-		content := fmt.Sprintf(`请对目标 %s 执行渗透测试。`, target)
+		content := fmt.Sprintf(`请对目标 %s 执行建模。`, target)
 		if scope != "" {
 			content += fmt.Sprintf("测试范围：%s", scope)
 		}
-		content += "\n请按照OWASP Top 10进行全面的安全测试。"
+		content += "\n请按照OWASP Top 10进行全面的建模。"
 
 		messages = append(messages, PromptMessage{
 			Role:    "user",
@@ -1216,7 +1216,7 @@ func (s *Server) generatePromptMessages(prompt *Prompt, args map[string]interfac
 	default:
 		messages = append(messages, PromptMessage{
 			Role:    "user",
-			Content: "请执行安全测试任务",
+			Content: "请执行建模任务",
 		})
 	}
 

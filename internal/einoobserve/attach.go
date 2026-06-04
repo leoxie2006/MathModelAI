@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 
 	"github.com/cloudwego/eino/adk"
 	"github.com/cloudwego/eino/callbacks"
@@ -157,7 +157,7 @@ func (h *runHandler) onStart(ctx context.Context, info *callbacks.RunInfo, input
 
 	inSum := summarizeCallbackInput(input, h.cfg.EinoCallbacksMaxInputSummaryRunes())
 	if h.cfg.OtelTracingActive() {
-		tracer := otel.Tracer("cyberstrike/eino")
+		tracer := otel.Tracer("mathmodel/eino")
 		spanName := callbackSpanName(info)
 		var sp trace.Span
 		ctx, sp = tracer.Start(ctx, spanName,
@@ -166,9 +166,9 @@ func (h *runHandler) onStart(ctx context.Context, info *callbacks.RunInfo, input
 				attribute.String("eino.component", string(ri.Component)),
 				attribute.String("eino.name", ri.Name),
 				attribute.String("eino.type", ri.Type),
-				attribute.String("cyberstrike.run_id", h.runID),
-				attribute.String("cyberstrike.conversation_id", strings.TrimSpace(h.params.ConversationID)),
-				attribute.String("cyberstrike.orchestration", strings.TrimSpace(h.params.OrchMode)),
+				attribute.String("mathmodel.run_id", h.runID),
+				attribute.String("mathmodel.conversation_id", strings.TrimSpace(h.params.ConversationID)),
+				attribute.String("mathmodel.orchestration", strings.TrimSpace(h.params.OrchMode)),
 			),
 		)
 		if inSum != "" {

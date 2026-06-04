@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"cyberstrike-ai/internal/agent"
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/agent"
+	"mathmodel-ai/internal/config"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/adk"
@@ -18,8 +18,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// einoSummarizeUserInstruction：压缩历史时保留渗透测试关键信息。
-const einoSummarizeUserInstruction = `在保持所有关键安全测试信息完整的前提下压缩对话历史。
+// einoSummarizeUserInstruction：压缩历史时保留建模关键信息。
+const einoSummarizeUserInstruction = `在保持所有关键建模信息完整的前提下压缩对话历史。
 
 必须保留：已确认漏洞与攻击路径、工具输出中的核心发现、凭证与认证细节、架构与薄弱点、当前进度、失败尝试与死路、策略决策。
 保留精确技术细节（URL、路径、参数、Payload、版本号、报错原文可摘要但要点不丢）。
@@ -78,7 +78,7 @@ func newEinoSummarizationMiddleware(
 	}
 	transcriptPath := ""
 	if conv := strings.TrimSpace(conversationID); conv != "" {
-		baseRoot := filepath.Join(os.TempDir(), "cyberstrike-summarization")
+		baseRoot := filepath.Join(os.TempDir(), "mathmodel-summarization")
 		if dbPath := strings.TrimSpace(appCfg.Database.Path); dbPath != "" {
 			// Persist with the same lifecycle as local conversation storage.
 			baseRoot = filepath.Join(filepath.Dir(dbPath), "conversation_artifacts", sanitizeEinoPathSegment(conv), "summarization")

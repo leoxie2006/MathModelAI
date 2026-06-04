@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"cyberstrike-ai/internal/audit"
-	"cyberstrike-ai/internal/database"
-	"cyberstrike-ai/internal/knowledge"
+	"mathmodel-ai/internal/audit"
+	"mathmodel-ai/internal/database"
+	"mathmodel-ai/internal/knowledge"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

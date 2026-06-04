@@ -12,7 +12,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 
 	"go.uber.org/zap"
 )

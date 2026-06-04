@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 
 	"github.com/cloudwego/eino/adk"
 	"github.com/cloudwego/eino/schema"

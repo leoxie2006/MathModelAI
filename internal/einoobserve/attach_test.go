@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 )
 
 func TestAttachAgentRunCallbacks_Disabled(t *testing.T) {

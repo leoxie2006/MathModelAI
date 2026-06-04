@@ -1,4 +1,4 @@
-module cyberstrike-ai
+module mathmodel-ai
 
 // 若 go mod download 超时，可执行: go env -w GOPROXY=https://goproxy.cn,direct
 // 或使用 scripts/bootstrap-go.sh
@@ -20,14 +20,10 @@ require (
 	github.com/eino-contrib/jsonschema v1.0.3
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/websocket v1.5.0
-	github.com/larksuite/oapi-sdk-go/v3 v3.4.22
 	github.com/mattn/go-sqlite3 v1.14.18
 	github.com/modelcontextprotocol/go-sdk v1.2.0
-	github.com/open-dingtalk/dingtalk-stream-sdk-go v0.9.1
 	github.com/pkoukk/tiktoken-go v0.1.8
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	go.opentelemetry.io/otel v1.34.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.34.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.34.0
@@ -35,7 +31,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.34.0
 	go.uber.org/zap v1.26.0
 	golang.org/x/net v0.35.0
-	golang.org/x/text v0.26.0
 	golang.org/x/time v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -49,7 +44,6 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.1.17 // indirect
-	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/evanphx/json-patch v0.5.2 // indirect
@@ -61,7 +55,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/jsonschema-go v0.3.0 // indirect
 	github.com/goph/emperror v0.17.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1 // indirect
@@ -91,9 +84,9 @@ require (
 	golang.org/x/arch v0.15.0 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250115164207-1a7da9e5054f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
 	google.golang.org/grpc v1.69.4 // indirect

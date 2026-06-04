@@ -3,8 +3,8 @@ package audit
 import (
 	"strings"
 
-	"cyberstrike-ai/internal/database"
-	"cyberstrike-ai/internal/security"
+	"mathmodel-ai/internal/database"
+	"mathmodel-ai/internal/security"
 
 	"github.com/gin-gonic/gin"
 )

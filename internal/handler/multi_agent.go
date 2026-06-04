@@ -10,9 +10,9 @@ import (
 	"sync"
 	"time"
 
-	"cyberstrike-ai/internal/config"
-	"cyberstrike-ai/internal/mcp"
-	"cyberstrike-ai/internal/multiagent"
+	"mathmodel-ai/internal/config"
+	"mathmodel-ai/internal/mcp"
+	"mathmodel-ai/internal/multiagent"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

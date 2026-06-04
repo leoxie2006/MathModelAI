@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 
 	"github.com/cloudwego/eino/adk/prebuilt/planexecute"
 )

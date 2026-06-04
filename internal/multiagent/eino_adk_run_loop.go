@@ -13,11 +13,11 @@ import (
 	"sync/atomic"
 	"unicode/utf8"
 
-	"cyberstrike-ai/internal/agent"
-	"cyberstrike-ai/internal/config"
-	"cyberstrike-ai/internal/einomcp"
-	"cyberstrike-ai/internal/einoobserve"
-	"cyberstrike-ai/internal/openai"
+	"mathmodel-ai/internal/agent"
+	"mathmodel-ai/internal/config"
+	"mathmodel-ai/internal/einomcp"
+	"mathmodel-ai/internal/einoobserve"
+	"mathmodel-ai/internal/openai"
 
 	"github.com/cloudwego/eino/adk"
 	"github.com/cloudwego/eino/schema"

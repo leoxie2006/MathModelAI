@@ -3,7 +3,7 @@ package project
 import (
 	"strings"
 
-	"cyberstrike-ai/internal/mcp/builtin"
+	"mathmodel-ai/internal/mcp/builtin"
 )
 
 // 边渗透边记录：统一节奏文案（agents/*.md 须与 FactRecordingIncrementalRhythmMarkdown 保持一致）。

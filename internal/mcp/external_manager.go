@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 
 	"github.com/google/uuid"
 

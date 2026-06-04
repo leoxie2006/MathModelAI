@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strings"
 
-	"cyberstrike-ai/internal/agents"
-	"cyberstrike-ai/internal/audit"
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/agents"
+	"mathmodel-ai/internal/audit"
+	"mathmodel-ai/internal/config"
 
 	"github.com/gin-gonic/gin"
 )

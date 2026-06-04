@@ -3,7 +3,7 @@ package knowledge
 import (
 	"testing"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 
 	"github.com/cloudwego/eino/schema"
 )

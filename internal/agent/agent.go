@@ -13,12 +13,11 @@ import (
 	"sync"
 	"time"
 
-	"cyberstrike-ai/internal/c2"
-	"cyberstrike-ai/internal/config"
-	"cyberstrike-ai/internal/mcp"
-	"cyberstrike-ai/internal/mcp/builtin"
-	"cyberstrike-ai/internal/openai"
-	"cyberstrike-ai/internal/storage"
+	"mathmodel-ai/internal/config"
+	"mathmodel-ai/internal/mcp"
+	"mathmodel-ai/internal/mcp/builtin"
+	"mathmodel-ai/internal/openai"
+	"mathmodel-ai/internal/storage"
 
 	"go.uber.org/zap"
 )
@@ -598,8 +597,6 @@ func (a *Agent) executeToolViaMCP(ctx context.Context, toolName string, args map
 			}
 		}()
 	}
-	// C2 危险任务 HITL 异步等待：须绑定整条 Agent 运行期 ctx，而非单次工具子 ctx（return 时会被 cancel）
-	toolCtx = c2.WithHITLRunContext(toolCtx, ctx)
 
 	// 检查是否是外部MCP工具（通过工具名称映射）
 	a.mu.RLock()
@@ -915,7 +912,7 @@ func (a *Agent) ExecuteMCPToolForConversation(ctx context.Context, conversationI
 }
 
 // RecordLocalToolExecution 将非 CallTool 路径完成的工具调用写入 MCP 监控库（与 CallTool 落库一致），返回 executionId。
-// 用于 Eino filesystem execute 等场景，使助手气泡「渗透测试详情」与常规 MCP 一致可点进监控。
+// 用于 Eino filesystem execute 等场景，使助手气泡「建模详情」与常规 MCP 一致可点进监控。
 func (a *Agent) RecordLocalToolExecution(toolName string, args map[string]interface{}, resultText string, invokeErr error) string {
 	if a == nil || a.mcpServer == nil {
 		return ""

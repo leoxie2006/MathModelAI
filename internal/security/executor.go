@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"cyberstrike-ai/internal/config"
-	"cyberstrike-ai/internal/mcp"
-	"cyberstrike-ai/internal/storage"
+	"mathmodel-ai/internal/config"
+	"mathmodel-ai/internal/mcp"
+	"mathmodel-ai/internal/storage"
 
 	"github.com/creack/pty"
 	"go.uber.org/zap"

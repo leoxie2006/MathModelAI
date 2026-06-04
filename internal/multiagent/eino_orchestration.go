@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"cyberstrike-ai/internal/agent"
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/agent"
+	"mathmodel-ai/internal/config"
 
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/adk"

@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"cyberstrike-ai/internal/audit"
-	"cyberstrike-ai/internal/database"
+	"mathmodel-ai/internal/audit"
+	"mathmodel-ai/internal/database"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

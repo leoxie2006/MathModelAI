@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	"cyberstrike-ai/internal/config"
+	"mathmodel-ai/internal/config"
 
 	"golang.org/x/net/http2"
 )

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"cyberstrike-ai/internal/database"
+	"mathmodel-ai/internal/database"
 )
 
 func TestBuildScopeBlock_targetsExcludeNotes(t *testing.T) {

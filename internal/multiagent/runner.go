@@ -12,13 +12,13 @@ import (
 	"sync"
 	"time"
 
-	"cyberstrike-ai/internal/agent"
-	"cyberstrike-ai/internal/agents"
-	"cyberstrike-ai/internal/config"
-	"cyberstrike-ai/internal/einomcp"
-	"cyberstrike-ai/internal/openai"
-	"cyberstrike-ai/internal/project"
-	"cyberstrike-ai/internal/reasoning"
+	"mathmodel-ai/internal/agent"
+	"mathmodel-ai/internal/agents"
+	"mathmodel-ai/internal/config"
+	"mathmodel-ai/internal/einomcp"
+	"mathmodel-ai/internal/openai"
+	"mathmodel-ai/internal/project"
+	"mathmodel-ai/internal/reasoning"
 
 	einoopenai "github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/adk"
@@ -201,7 +201,7 @@ func RunDeepAgent(
 			}
 			instr := strings.TrimSpace(sub.Instruction)
 			if instr == "" {
-				instr = "你是 CyberStrikeAI 中的专业子代理，在授权渗透测试场景下协助完成用户委托的子任务。优先使用可用工具获取证据，回答简洁专业。"
+				instr = "你是 MathModelAI 中的专业子代理，在数学建模场景下协助完成用户委托的子任务。优先使用可用工具获取证据，回答简洁专业。"
 			}
 
 			roleTools := sub.RoleTools
@@ -262,7 +262,7 @@ func RunDeepAgent(
 				subHandlers = append(subHandlers, teleMw)
 			}
 
-			subInstrFinal := project.AppendVisionImageAnalysisIfReady(instr, appCfg.Vision.Ready())
+			subInstrFinal := project.AppendVisionImageAnalysisIfReady(instr, false)
 			subInstrFinal = injectToolNamesOnlyInstruction(ctx, subInstrFinal, subTools, subToolSearchActive)
 			if logger != nil {
 				subNames := collectToolNames(ctx, subTools)
@@ -314,7 +314,7 @@ func RunDeepAgent(
 	modelFacingTrace := newModelFacingTraceHolder()
 
 	// 与 deep.Config.Name / supervisor 主代理 Name 一致。
-	orchestratorName := "cyberstrike-deep"
+	orchestratorName := "mathmodel-deep"
 	orchDescription := "Coordinates specialist agents and MCP tools for authorized security testing."
 	orchInstruction, orchMeta := resolveMainOrchestratorInstruction(orchMode, ma, markdownLoad)
 	if orchMeta != nil {
@@ -343,7 +343,7 @@ func RunDeepAgent(
 	}
 
 	orchInstruction = project.AppendSystemPromptBlock(orchInstruction, systemPromptExtra)
-	orchInstruction = project.AppendVisionImageAnalysisIfReady(orchInstruction, appCfg.Vision.Ready())
+	orchInstruction = project.AppendVisionImageAnalysisIfReady(orchInstruction, false)
 	orchInstruction = injectToolNamesOnlyInstruction(ctx, orchInstruction, mainTools, mainToolSearchActive)
 	if logger != nil {
 		mainNames := collectToolNames(ctx, mainTools)

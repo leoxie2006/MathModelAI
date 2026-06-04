@@ -3,7 +3,7 @@ package multiagent
 import (
 	"testing"
 
-	"cyberstrike-ai/internal/agent"
+	"mathmodel-ai/internal/agent"
 )
 
 func TestHistoryToMessagesPreservesReasoningContent(t *testing.T) {

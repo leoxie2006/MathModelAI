@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"cyberstrike-ai/internal/config"
-	"cyberstrike-ai/internal/mcp/builtin"
+	"mathmodel-ai/internal/config"
+	"mathmodel-ai/internal/mcp/builtin"
 
 	localbk "github.com/cloudwego/eino-ext/adk/backend/local"
 	"github.com/cloudwego/eino/adk"
@@ -132,7 +132,7 @@ func buildReductionMiddleware(ctx context.Context, mw config.MultiAgentEinoMiddl
 	}
 	root := strings.TrimSpace(mw.ReductionRootDir)
 	if root == "" {
-		root = filepath.Join(os.TempDir(), "cyberstrike-reduction", sanitizeEinoPathSegment(convID))
+		root = filepath.Join(os.TempDir(), "mathmodel-reduction", sanitizeEinoPathSegment(convID))
 	}
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		return nil, fmt.Errorf("reduction root: %w", err)
