@@ -28,17 +28,11 @@ let toolsPagination = {
     totalPages: 0
 };
 
-/** 根据多代理开关,启用/禁用 Eino 编排选项 */
+/** 数学建模工作台固定使用 Deep 多代理编排。 */
 function syncMultiAgentModeSelectOptions(multiEnabled) {
     const sel = document.getElementById('multi-agent-default-mode');
     if (!sel) return;
-    ['deep', 'plan_execute', 'supervisor'].forEach(function (v) {
-        const opt = sel.querySelector('option[value="' + v + '"]');
-        if (opt) opt.disabled = !multiEnabled;
-    });
-    if (!multiEnabled && ['deep', 'plan_execute', 'supervisor'].indexOf(sel.value) >= 0) {
-        sel.value = 'eino_single';
-    }
+    sel.value = 'deep';
 }
 
 // 加载配置并填充表单
@@ -100,16 +94,14 @@ function fillConfigForm(config) {
     if (config.multi_agent) {
         const maEnEl = document.getElementById('multi-agent-enabled');
         if (maEnEl) {
-            maEnEl.checked = config.multi_agent.enabled !== false;
-            syncMultiAgentModeSelectOptions(maEnEl.checked);
+            maEnEl.checked = true;
+            maEnEl.disabled = true;
+            syncMultiAgentModeSelectOptions(true);
         }
         const maDefaultMode = document.getElementById('multi-agent-default-mode');
         if (maDefaultMode) {
-            let mode = (config.multi_agent.robot_default_agent_mode || 'eino_single').trim().toLowerCase();
-            if (!['eino_single', 'deep', 'plan_execute', 'supervisor'].includes(mode)) {
-                mode = 'eino_single';
-            }
-            maDefaultMode.value = mode;
+            maDefaultMode.value = 'deep';
+            maDefaultMode.disabled = true;
         }
     }
 }
@@ -167,14 +159,10 @@ async function applySettings() {
     };
 
     // 多代理
-    const maEnabled = document.getElementById('multi-agent-enabled')?.checked;
-    const maDefaultMode = document.getElementById('multi-agent-default-mode')?.value;
-    if (maEnabled !== undefined) {
-        update.multi_agent = {
-            enabled: !!maEnabled,
-            robot_default_agent_mode: maDefaultMode || 'eino_single',
-        };
-    }
+    update.multi_agent = {
+        enabled: true,
+        robot_default_agent_mode: 'deep',
+    };
 
     try {
         const response = await apiFetch('/api/config/apply', {

@@ -650,12 +650,12 @@ func (h *ConfigHandler) UpdateConfig(c *gin.Context) {
 
 	// 多代理标量（sub_agents 等仍由 config.yaml 维护）
 	if req.MultiAgent != nil {
-		h.config.MultiAgent.Enabled = req.MultiAgent.Enabled
+		h.config.MultiAgent.Enabled = true
 		h.config.MultiAgent.BatchUseMultiAgent = req.MultiAgent.BatchUseMultiAgent
 		if mode := strings.TrimSpace(req.MultiAgent.RobotDefaultAgentMode); mode != "" {
 			h.config.MultiAgent.RobotDefaultAgentMode = mode
 		} else {
-			h.config.MultiAgent.RobotDefaultAgentMode = "eino_single"
+			h.config.MultiAgent.RobotDefaultAgentMode = "deep"
 		}
 		if req.MultiAgent.PlanExecuteLoopMaxIterations != nil {
 			h.config.MultiAgent.PlanExecuteLoopMaxIterations = *req.MultiAgent.PlanExecuteLoopMaxIterations

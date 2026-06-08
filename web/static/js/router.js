@@ -10,6 +10,7 @@ const VALID_PAGES = [
     'checkpoint-workbench',
     'mcp-management',
     'knowledge-management',
+    'agents-management',
     'roles-management',
     'skills-management',
 ];
@@ -117,6 +118,7 @@ function updateNavState(pageId) {
         'mcp-management': 'mcp',
         'knowledge-management': 'knowledge',
         'skills-management': 'skills',
+        'agents-management': 'agents',
         'roles-management': 'roles',
     };
     const parent = parentMap[pageId];
@@ -304,6 +306,11 @@ async function initPage(pageId) {
             if (skillsSearchClear) skillsSearchClear.style.display = 'none';
             if (typeof initSkillsPagination === 'function') initSkillsPagination();
             if (typeof loadSkills === 'function') loadSkills();
+            break;
+        case 'agents-management':
+            if (typeof loadMarkdownAgents === 'function') {
+                loadMarkdownAgents();
+            }
             break;
     }
 }

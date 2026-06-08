@@ -38,13 +38,14 @@ function isInterruptContinueInjectChatMessage(content) {
 let chatAttachments = [];
 let chatAttachmentSeq = 0;
 
-// 对话模式：eino_single = Eino ADK 单代理（/api/eino-agent/stream）；deep / plan_execute / supervisor = Eino 多代理（/api/multi-agent/stream，请求体 orchestration）
+// 对话模式固定为数学建模多代理：Deep 编排（/api/multi-agent/stream，请求体 orchestration=deep）。
 const AGENT_MODE_STORAGE_KEY = 'cyberstrike-chat-agent-mode';
 const REASONING_MODE_LS = 'cyberstrike-chat-reasoning-mode';
 const REASONING_EFFORT_LS = 'cyberstrike-chat-reasoning-effort';
+const CHAT_AGENT_MODE_DEEP = 'deep';
 const CHAT_AGENT_MODE_EINO_SINGLE = 'eino_single';
-const CHAT_AGENT_EINO_MODES = ['deep', 'plan_execute', 'supervisor'];
-let multiAgentAPIEnabled = false;
+const CHAT_AGENT_EINO_MODES = [CHAT_AGENT_MODE_DEEP];
+let multiAgentAPIEnabled = true;
 
 // 人机协同（HITL）会话级配置
 const HITL_STORAGE_PREFIX = 'cyberstrike-chat-hitl';
@@ -80,10 +81,7 @@ if (typeof window !== 'undefined') {
 }
 
 function normalizeOrchestrationClient(s) {
-    const v = String(s || '').trim().toLowerCase().replace(/-/g, '_');
-    if (v === 'plan_execute' || v === 'planexecute' || v === 'pe') return 'plan_execute';
-    if (v === 'supervisor' || v === 'super' || v === 'sv') return 'supervisor';
-    return 'deep';
+    return CHAT_AGENT_MODE_DEEP;
 }
 
 function chatAgentModeIsEino(mode) {
@@ -390,21 +388,15 @@ async function applyHitlSidebarConfig() {
     }
 }
 
-/** 将 localStorage 规范为 eino_single | deep | plan_execute | supervisor */
+/** 将旧 localStorage 对话模式统一归一为 deep。 */
 function chatAgentModeNormalizeStored(stored, cfg) {
-    const pub = cfg && cfg.multi_agent ? cfg.multi_agent : null;
-    const multiOn = !!(pub && pub.enabled);
-    const s = stored;
-    if (chatAgentModeIsEinoSingle(s)) return s;
-    if (chatAgentModeIsEino(s)) {
-        return multiOn ? s : CHAT_AGENT_MODE_EINO_SINGLE;
-    }
-    return CHAT_AGENT_MODE_EINO_SINGLE;
+    return CHAT_AGENT_MODE_DEEP;
 }
 
 if (typeof window !== 'undefined') {
     window.csaiHitlGlobalToolWhitelist = window.csaiHitlGlobalToolWhitelist || [];
     window.csaiChatAgentMode = {
+        ONLY: CHAT_AGENT_MODE_DEEP,
         EINO_MODES: CHAT_AGENT_EINO_MODES,
         EINO_SINGLE: CHAT_AGENT_MODE_EINO_SINGLE,
         isEino: chatAgentModeIsEino,
@@ -442,36 +434,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function getAgentModeLabelForValue(mode) {
     if (typeof window.t === 'function') {
-        switch (mode) {
-            case 'deep':
-                return window.t('chat.agentModeDeep');
-            case 'plan_execute':
-                return window.t('chat.agentModePlanExecuteLabel');
-            case 'supervisor':
-                return window.t('chat.agentModeSupervisorLabel');
-            case CHAT_AGENT_MODE_EINO_SINGLE:
-                return window.t('chat.agentModeEinoSingle');
-            default:
-                return mode;
-        }
+        return window.t('chat.agentModeDeep');
     }
-    switch (mode) {
-        case CHAT_AGENT_MODE_EINO_SINGLE: return 'Eino 单代理';
-        case 'deep': return 'Deep';
-        case 'plan_execute': return 'Plan-Execute';
-        case 'supervisor': return 'Supervisor';
-        default: return mode;
-    }
+    return '数学建模多代理（Deep）';
 }
 
 function getAgentModeIconForValue(mode) {
-    switch (mode) {
-        case CHAT_AGENT_MODE_EINO_SINGLE: return '⚡';
-        case 'deep': return '🧩';
-        case 'plan_execute': return '📋';
-        case 'supervisor': return '🎯';
-        default: return '🤖';
-    }
+    return '🧩';
 }
 
 function syncAgentModeFromValue(value) {
@@ -491,7 +460,7 @@ function syncAgentModeFromValue(value) {
 function syncReasoningRowVisibility(modeVal) {
     const wrap = document.getElementById('chat-reasoning-wrapper');
     if (!wrap) return;
-    const show = modeVal === CHAT_AGENT_MODE_EINO_SINGLE || (multiAgentAPIEnabled && chatAgentModeIsEino(modeVal));
+    const show = multiAgentAPIEnabled && chatAgentModeIsEino(modeVal);
     wrap.style.display = show ? '' : 'none';
     if (!show) {
         closeChatReasoningPanel();
@@ -646,12 +615,10 @@ function toggleAgentModePanel() {
 }
 
 function selectAgentMode(mode) {
-    const ok = chatAgentModeIsEinoSingle(mode) || chatAgentModeIsEino(mode);
-    if (!ok) return;
     try {
-        localStorage.setItem(AGENT_MODE_STORAGE_KEY, mode);
+        localStorage.setItem(AGENT_MODE_STORAGE_KEY, CHAT_AGENT_MODE_DEEP);
     } catch (e) { /* ignore */ }
-    syncAgentModeFromValue(mode);
+    syncAgentModeFromValue(CHAT_AGENT_MODE_DEEP);
     closeAgentModePanel();
 }
 
@@ -660,22 +627,14 @@ async function initChatAgentModeFromConfig() {
     const sel = document.getElementById('agent-mode-select');
     if (!wrap || !sel) return;
 
-    // 先展示基础模式，避免首次登录时配置接口短暂失败导致入口被隐藏。
-    wrap.style.display = '';
-    let stored = localStorage.getItem(AGENT_MODE_STORAGE_KEY);
-    if (!(chatAgentModeIsEinoSingle(stored) || chatAgentModeIsEino(stored))) {
-        stored = CHAT_AGENT_MODE_EINO_SINGLE;
-    }
+    wrap.style.display = 'none';
+    multiAgentAPIEnabled = true;
+    let stored = CHAT_AGENT_MODE_DEEP;
+    try {
+        localStorage.setItem(AGENT_MODE_STORAGE_KEY, stored);
+    } catch (e) { /* ignore */ }
     sel.value = stored;
     syncAgentModeFromValue(stored);
-    document.querySelectorAll('.agent-mode-option').forEach(function (el) {
-        const v = el.getAttribute('data-value');
-        if (v === 'deep' || v === 'plan_execute' || v === 'supervisor') {
-            el.style.display = 'none';
-        } else {
-            el.style.display = '';
-        }
-    });
     restoreChatReasoningControlsFromStorage();
     syncReasoningRowVisibility(stored);
 
@@ -683,7 +642,7 @@ async function initChatAgentModeFromConfig() {
         const r = await apiFetch('/api/config');
         if (!r.ok) return;
         const cfg = await r.json();
-        multiAgentAPIEnabled = !!(cfg.multi_agent && cfg.multi_agent.enabled);
+        multiAgentAPIEnabled = !(cfg.multi_agent && cfg.multi_agent.enabled === false);
         if (typeof window !== 'undefined') {
             window.__csaiMultiAgentPublic = cfg.multi_agent || null;
             const tw = cfg.hitl && cfg.hitl.tool_whitelist;
@@ -691,14 +650,6 @@ async function initChatAgentModeFromConfig() {
                 window.csaiHitlGlobalToolWhitelist = tw.slice();
             }
         }
-        document.querySelectorAll('.agent-mode-option').forEach(function (el) {
-            const v = el.getAttribute('data-value');
-            if (v === 'deep' || v === 'plan_execute' || v === 'supervisor') {
-                el.style.display = multiAgentAPIEnabled ? '' : 'none';
-            } else {
-                el.style.display = '';
-            }
-        });
         stored = chatAgentModeNormalizeStored(stored, cfg);
         try {
             localStorage.setItem(AGENT_MODE_STORAGE_KEY, stored);
@@ -715,10 +666,8 @@ async function initChatAgentModeFromConfig() {
 document.addEventListener('languagechange', function () {
     const hid = document.getElementById('agent-mode-select');
     if (!hid) return;
-    const v = hid.value;
-    if (chatAgentModeIsEinoSingle(v) || chatAgentModeIsEino(v)) {
-        syncAgentModeFromValue(v);
-    }
+    hid.value = CHAT_AGENT_MODE_DEEP;
+    syncAgentModeFromValue(CHAT_AGENT_MODE_DEEP);
     if (typeof updateChatReasoningSummary === 'function') {
         updateChatReasoningSummary();
     }
@@ -936,12 +885,10 @@ async function sendMessage() {
     
     try {
         const modeSel = document.getElementById('agent-mode-select');
-        let modeVal = modeSel ? modeSel.value : CHAT_AGENT_MODE_EINO_SINGLE;
-        const useMulti = multiAgentAPIEnabled && chatAgentModeIsEino(modeVal);
-        const streamPath = useMulti ? '/api/multi-agent/stream' : '/api/eino-agent/stream';
-        if (useMulti && modeVal) {
-            body.orchestration = modeVal;
-        }
+        const modeVal = CHAT_AGENT_MODE_DEEP;
+        if (modeSel) modeSel.value = modeVal;
+        body.orchestration = modeVal;
+        const streamPath = '/api/multi-agent/stream';
         const response = await apiFetch(streamPath, {
             method: 'POST',
             headers: {

@@ -400,6 +400,9 @@ func NormalizeAgentMode(mode string) string {
 
 // NormalizeRobotAgentMode 解析机器人默认对话模式。
 func NormalizeRobotAgentMode(ma MultiAgentConfig) string {
+	if strings.TrimSpace(ma.RobotDefaultAgentMode) == "" {
+		return "deep"
+	}
 	return NormalizeAgentMode(ma.RobotDefaultAgentMode)
 }
 

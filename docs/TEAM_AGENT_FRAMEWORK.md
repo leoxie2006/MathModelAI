@@ -96,6 +96,7 @@
 
 ## 文件落点
 
+- Agent 注册入口：`config.yaml` 的 `agents_dir: agents` 指向 [agents/](../agents/)；Web 的「Agent 管理」页读写这些 Markdown 文件。「角色管理」只读写 [roles/](../roles/) 下的 YAML 角色。
 - 父代理：[agents/orchestrator.md](../agents/orchestrator.md)
 - 三位 Lead：[agents/modeling-lead.md](../agents/modeling-lead.md)、[agents/coding-lead.md](../agents/coding-lead.md)、[agents/paper-lead.md](../agents/paper-lead.md)
 - 专项代理：

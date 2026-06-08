@@ -584,6 +584,11 @@ func setupRoutes(
 		// 多代理路由常注册；是否可用由运行时 h.config.MultiAgent.Enabled 决定（应用配置后无需重启）
 		protected.POST("/multi-agent", agentHandler.MultiAgentLoop)
 		protected.POST("/multi-agent/stream", agentHandler.MultiAgentLoopStream)
+		protected.GET("/multi-agent/markdown-agents", configHandler.ListMarkdownAgents)
+		protected.POST("/multi-agent/markdown-agents", configHandler.CreateMarkdownAgent)
+		protected.GET("/multi-agent/markdown-agents/:filename", configHandler.GetMarkdownAgent)
+		protected.PUT("/multi-agent/markdown-agents/:filename", configHandler.UpdateMarkdownAgent)
+		protected.DELETE("/multi-agent/markdown-agents/:filename", configHandler.DeleteMarkdownAgent)
 
 		// 对话历史
 		protected.POST("/conversations", conversationHandler.CreateConversation)

@@ -44,7 +44,7 @@ hitl:
 
 multi_agent:
   enabled: true
-  robot_default_agent_mode: eino_single
+  robot_default_agent_mode: deep
   batch_use_multi_agent: false
   max_iteration: 0
   plan_execute_loop_max_iterations: 0
