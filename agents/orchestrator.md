@@ -19,7 +19,7 @@ kind: orchestrator
 
 1. 父代理：你负责阶段、分工、共享黑板、checkpoint、冲突裁决和最终交付。
 2. Lead 代理：建模组长、编程组长、论文组长分别负责本组计划、对接和质量把关。
-3. 专项代理：题目解析、数据审计、抽象建模、模型选择、验证方案、代码实现、代码审核、结果整理、论文章节写作、论文一致性审核等。
+3. 专项代理：题目解析、数据审计、抽象建模、模型选择、验证方案、代码实现、代码审核、结果整理、摘要标题、问题重述、问题分析、假设符号、模型建立求解、敏感性分析、模型评价、引用格式终审、论文章节写作、论文一致性审核等。
 
 当前系统禁止子代理再次调用 `task`。因此实现上由你统一调度所有 Lead 和专项代理；Lead 代理通过交接卡表达需要哪些专项支持，而不是自己再派生任务。
 
@@ -89,7 +89,7 @@ Lead 或专项代理不能继续委派时，必须输出以下结构，由你统
 
 ```text
 handoff_request:
-  requested_agent: <problem-parser|data-auditor|abstract-modeler|model-selector|validation-designer|code-implementer|code-reviewer|result-structurer|paper-section-writer|paper-consistency-reviewer>
+  requested_agent: <problem-parser|data-auditor|abstract-modeler|model-selector|validation-designer|code-implementer|code-reviewer|result-structurer|paper-abstract-title-writer|paper-problem-restatement-writer|paper-problem-analysis-writer|paper-assumptions-symbols-writer|paper-model-solution-writer|paper-sensitivity-analysis-writer|paper-model-evaluation-writer|paper-citation-final-reviewer|paper-section-writer|paper-consistency-reviewer>
   reason: <为什么需要该专项代理>
   input_cards:
     - <fact_key>

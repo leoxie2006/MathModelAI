@@ -21,8 +21,16 @@
   结果整理专员
 
 论文手 / Paper Lead
-  论文章节写作专员
-  论文一致性审核专员
+  摘要标题专员
+  问题重述专员
+  问题分析专员
+  假设符号专员
+  模型建立求解专员
+  敏感性分析专员
+  模型评价专员
+  引用格式终审专员
+  论文章节写作专员（兜底）
+  论文一致性审核专员（跨章节）
 ```
 
 当前运行层面由父代理统一调度所有 Lead 和专项代理。Lead 代理负责提出需求、交接和复核；专项代理负责执行具体任务。这样能避免嵌套委派失控，也符合现有多代理中“子代理禁止再次 task”的运行约束。
@@ -90,7 +98,10 @@
 
 - 父代理：[agents/orchestrator.md](../agents/orchestrator.md)
 - 三位 Lead：[agents/modeling-lead.md](../agents/modeling-lead.md)、[agents/coding-lead.md](../agents/coding-lead.md)、[agents/paper-lead.md](../agents/paper-lead.md)
-- 专项代理：`agents/problem-parser.md`、`agents/data-auditor.md`、`agents/abstract-modeler.md`、`agents/model-selector.md`、`agents/validation-designer.md`、`agents/code-implementer.md`、`agents/code-reviewer.md`、`agents/result-structurer.md`、`agents/paper-section-writer.md`、`agents/paper-consistency-reviewer.md`
+- 专项代理：
+  - 建模：`agents/problem-parser.md`、`agents/data-auditor.md`、`agents/abstract-modeler.md`、`agents/model-selector.md`、`agents/validation-designer.md`
+  - 编程：`agents/code-implementer.md`、`agents/code-reviewer.md`、`agents/result-structurer.md`
+  - 论文：`agents/paper-abstract-title-writer.md`、`agents/paper-problem-restatement-writer.md`、`agents/paper-problem-analysis-writer.md`、`agents/paper-assumptions-symbols-writer.md`、`agents/paper-model-solution-writer.md`、`agents/paper-sensitivity-analysis-writer.md`、`agents/paper-model-evaluation-writer.md`、`agents/paper-citation-final-reviewer.md`、`agents/paper-section-writer.md`、`agents/paper-consistency-reviewer.md`
 - 协作协议 Skill：[skills/team-collaboration-workflow/SKILL.md](../skills/team-collaboration-workflow/SKILL.md)
 - 自建工具箱：[toolbox/](../toolbox/)
 - 论文输出产线：[toolbox/report/](../toolbox/report/)

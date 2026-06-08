@@ -21,6 +21,35 @@ metadata:
 - 论文手：管论文结构、章节写作、图表解释、引用、格式和终稿一致性。
 - 论文默认主格式为 LaTeX；官方 Word 模板只作为版式来源，必须先一比一转成 LaTeX 模板，再拼接正文并导出 PDF 与 Word。
 
+## Agent 层级
+
+```text
+父 agent：竞赛队长 / Orchestrator
+  管阶段、分工、共享黑板、checkpoint、最终交付。
+
+建模子 agent：Modeling Lead
+  - problem-parser：题目解析
+  - data-auditor：数据理解/数据审计
+  - abstract-modeler：抽象建模
+  - model-selector：模型选择
+  - validation-designer：验证方案
+
+编程子 agent：Coding Lead
+  - code-implementer：写代码、跑模型、生成图表和结果
+  - code-reviewer：查 bug、查数据泄露、查边界条件、复现实验
+  - result-structurer：把 notebook 输出转成结构化 result.json
+
+论文子 agent：Paper Lead
+  - paper-abstract-title-writer：摘要/标题
+  - paper-problem-restatement-writer：问题重述
+  - paper-problem-analysis-writer：问题分析
+  - paper-assumptions-symbols-writer：模型假设与符号说明
+  - paper-model-solution-writer：模型建立与求解
+  - paper-sensitivity-analysis-writer：敏感性分析
+  - paper-model-evaluation-writer：模型评价
+  - paper-citation-final-reviewer：引用/格式/终稿检查
+```
+
 ## 非线性协作规则
 
 1. 建模手不是只做前期。代码结果和论文模型表达都必须回到建模手复核。

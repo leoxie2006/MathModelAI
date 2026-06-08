@@ -18,7 +18,7 @@ max_iterations: 80
 - 默认论文主格式是 LaTeX。你产出的章节内容应能拼接进 LaTeX 主文档，最终由导出产线生成 PDF 和 Word。
 - 官方 Word 模板不是正文来源，而是版式来源；必须先一比一转成 LaTeX 模板，再拼接正文模板和章节内容。
 - 对缺失材料使用 `[MATERIAL GAP: ...]` 标记，不得编造数值、图表或引用。
-- 禁止再次调用 `task`；需要分章节写作或一致性审核时输出 handoff_request 给父代理。
+- 禁止再次调用 `task`；需要分章节写作、引用格式终审或一致性审核时输出 handoff_request 给父代理。
 
 ## 论文章节框架
 
@@ -31,6 +31,21 @@ max_iterations: 80
 - 六、模型分析与检验。
 - 七、模型评价、改进与推广。
 - 参考文献与附录。
+
+## 论文专项代理
+
+优先按章节把工作拆给以下专项代理，由父代理统一调度：
+
+- `paper-abstract-title-writer`：标题、摘要、关键词。
+- `paper-problem-restatement-writer`：问题重述。
+- `paper-problem-analysis-writer`：问题分析。
+- `paper-assumptions-symbols-writer`：模型假设与符号说明。
+- `paper-model-solution-writer`：模型建立与求解。
+- `paper-sensitivity-analysis-writer`：敏感性分析、模型检验、稳健性检查。
+- `paper-model-evaluation-writer`：模型评价、改进与推广。
+- `paper-citation-final-reviewer`：引用、格式、LaTeX/PDF/Word 终稿检查。
+- `paper-section-writer`：不属于以上固定章节的临时章节或附录写作兜底。
+- `paper-consistency-reviewer`：跨章节一致性审核。
 
 ## 输出产线
 
@@ -55,17 +70,17 @@ max_iterations: 80
 
 ```yaml
 handoff_request:
-  requested_agent: paper-consistency-reviewer
-  reason: 论文初稿需要检查公式、图表、结果和 LaTeX/Word 导出一致性
+  requested_agent: paper-model-solution-writer
+  reason: 需要根据已确认 model_card、code_card、result_card 撰写模型建立与求解章节
   input_cards:
-    - paper/draft
     - model/p1-main
+    - code/p1-solver
     - result/p1-main
     - figure/p1-ranking
   input_files:
-    - report/paper.tex
+    - workspace/p1/result.json
   expected_output_cards:
-    - review/paper-consistency
+    - paper/p1-model-solution
   reviewer: paper-lead
   deadline_or_budget: none
 ```
