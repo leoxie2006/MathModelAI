@@ -44,44 +44,6 @@
             margin: 0;
         }
         
-        .auth-info-section {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 32px;
-        }
-        
-        .auth-info-content {
-            max-width: 100%;
-        }
-        
-        .auth-info-section pre {
-            margin: 0;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-        }
-        
-        .auth-info-section code {
-            font-family: inherit;
-            font-size: inherit;
-        }
-        
-        .auth-info-header {
-            padding: 4px 0;
-        }
-        
-        .auth-info-header:hover {
-            opacity: 0.8;
-        }
-        
-        .auth-info-arrow {
-            color: var(--text-secondary);
-        }
-        
-        .auth-info-body {
-            animation: slideDown 0.2s ease;
-        }
-        
         @keyframes slideDown {
             from {
                 opacity: 0;
@@ -850,65 +812,6 @@
                 </div>
             </div>
         </div>
-        
-        <div id="auth-info-section" class="auth-info-section" style="display: none;">
-            <div class="auth-info-content">
-                <div class="auth-info-header" onclick="toggleAuthInfo()" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                        <h3 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-primary);" data-i18n="apiDocs.authTitle">API 认证说明</h3>
-                    </div>
-                    <svg id="auth-info-arrow" class="auth-info-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.2s ease;">
-                        <polyline points="6 9 12 15 18 9"/>
-                    </svg>
-                </div>
-                <div id="auth-info-body" class="auth-info-body" style="display: none; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6; margin-top: 16px;">
-                    <p style="margin: 0 0 12px 0;"><strong data-i18n="apiDocs.authAllNeedToken">所有 API 接口都需要 Token 认证。</strong></p>
-                    <div style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin-bottom: 12px;">
-                        <p style="margin: 0 0 8px 0; font-weight: 500;" data-i18n="apiDocs.authGetToken">1. 获取 Token：</p>
-                        <p style="margin: 0 0 8px 0;" data-i18n="apiDocs.authGetTokenDesc">在前端页面登录后，Token 会自动保存。您也可以通过以下方式获取：</p>
-                        <pre style="background: var(--bg-primary); padding: 8px; border-radius: 4px; margin: 8px 0; overflow-x: auto; font-size: 0.8125rem;"><code>POST /api/auth/login
-Content-Type: application/json
-
-{
-  "password": "your_password"
-}
-
-响应: { 
-  "token": "eyJhbGc...", 
-  "expires_at": "2026-01-27T...",
-  "session_duration_hr": 24
-}</code></pre>
-                    </div>
-                    <div style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin-bottom: 12px;">
-                        <p style="margin: 0 0 8px 0; font-weight: 500;" data-i18n="apiDocs.authUseToken">2. 使用 Token：</p>
-                        <p style="margin: 0 0 8px 0;" data-i18n="apiDocs.authUseTokenDesc">在请求头中添加 Authorization 字段：</p>
-                        <pre style="background: var(--bg-primary); padding: 8px; border-radius: 4px; margin: 8px 0; overflow-x: auto; font-size: 0.8125rem;"><code>Authorization: Bearer your_token_here</code></pre>
-                        <p style="margin: 8px 0 0 0; font-size: 0.8125rem; color: var(--text-muted);" data-i18n="apiDocs.authTip">💡 提示：本页面会自动使用您已登录的 Token，无需手动填写。</p>
-                    </div>
-                    <div id="token-status" style="display: none; background: rgba(0, 102, 255, 0.1); padding: 8px 12px; border-radius: 6px; border-left: 3px solid var(--accent-color);">
-                        <p style="margin: 0; font-size: 0.8125rem; color: var(--accent-color);" data-i18n="apiDocs.tokenDetected">
-                            <strong>✓ 已检测到 Token</strong> - 您可以直接测试 API 接口
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <script>
-            function toggleAuthInfo() {
-                const body = document.getElementById('auth-info-body');
-                const arrow = document.getElementById('auth-info-arrow');
-                if (body && arrow) {
-                    const isExpanded = body.style.display !== 'none';
-                    body.style.display = isExpanded ? 'none' : 'block';
-                    arrow.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
-                }
-            }
-        </script>
         
         <div class="api-docs-content">
             <div class="api-docs-sidebar">

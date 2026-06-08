@@ -1,0 +1,58 @@
+name: "mathmodel-exponential-smoothing"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    INPUT="$1"
+    VALUE_COLUMN="${2:-}"
+    OUTPUT="${3:-}"
+    STEPS="${4:-3}"
+    ALPHA="${5:-}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_toolkit.py" exponential-smoothing --input "$INPUT" --forecast-steps "$STEPS")
+    if [ -n "$VALUE_COLUMN" ]; then CMD+=(--value-column "$VALUE_COLUMN"); fi
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    if [ -n "$ALPHA" ]; then CMD+=(--alpha "$ALPHA"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "一次指数平滑预测并输出预测表和结果卡"
+description: |
+  调用 mathmodel-toolkit 的 exponential-smoothing 命令，对单变量时间序列做一次指数平滑。
+  若未提供 alpha，会在 0.01 到 0.99 之间网格搜索最小 SSE。
+parameters:
+  - name: "input"
+    type: "string"
+    description: "带表头 CSV 序列数据路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "value_column"
+    type: "string"
+    description: "可选数值列名。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "可选输出目录。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"
+  - name: "forecast_steps"
+    type: "string"
+    description: "预测步数，默认 3。"
+    required: false
+    default: "3"
+    position: 3
+    format: "positional"
+  - name: "alpha"
+    type: "string"
+    description: "可选平滑系数。"
+    required: false
+    default: ""
+    position: 4
+    format: "positional"

@@ -1,0 +1,38 @@
+name: "mathmodel-structure-results"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    INPUT="$1"
+    OUTPUT="$2"
+    PROBLEM="${3:-}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_pipeline.py" structure --input "$INPUT" --output "$OUTPUT")
+    if [ -n "$PROBLEM" ]; then CMD+=(--problem "$PROBLEM"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "把原始结果整理成 result_card、figure_card 和论文素材"
+description: |
+  读取运行目录或 result.json，输出 structured_result.json、result_card.md、figure_card.md 和 paper_material.md。
+parameters:
+  - name: "input"
+    type: "string"
+    description: "运行目录或 result.json 路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "整理输出目录。"
+    required: true
+    position: 1
+    format: "positional"
+  - name: "problem"
+    type: "string"
+    description: "可选，对应问题编号或说明。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"

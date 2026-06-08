@@ -1,0 +1,29 @@
+id: gm11
+name: GM(1,1) 灰色预测
+category: prediction
+applies_when: 样本量较小、序列整体呈单调趋势，需要快速短期预测。
+inputs:
+  - 原始非负序列
+  - 预测步长
+  - 背景值系数
+  - 精度检验配置
+outputs:
+  - 拟合序列
+  - 预测序列
+  - 后验差比与小误差概率
+  - 残差表
+assumptions:
+  - 序列可通过一次累加生成弱化随机波动
+  - 发展系数满足短期预测条件
+  - 序列无强周期或剧烈突变
+validation:
+  - 级比检验
+  - 后验差检验
+  - 残差检验
+  - 与移动平均或指数平滑基线对照
+pitfalls:
+  - 用于长期预测
+  - 原始序列含负数或零值未处理
+  - 不做级比检验
+  - 样本趋势突变仍强行使用
+future_cli: mathmodel-toolkit gm11 --input data.xlsx --config config.yaml

@@ -1,0 +1,32 @@
+name: "mathmodel-linear-programming"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    CONFIG="$1"
+    OUTPUT="${2:-}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_toolkit.py" linear-programming --config "$CONFIG")
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "小规模线性规划求解并输出 result_card / figure_card"
+description: |
+  调用 mathmodel-toolkit 的 linear-programming 命令，用顶点枚举求解小规模线性规划问题。
+  输入 JSON 需包含 variables、objective、constraints、sense；适合赛题中的基础资源分配、生产计划和方案优化。
+parameters:
+  - name: "config"
+    type: "string"
+    description: "线性规划 JSON 配置路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "可选输出目录；提供后写入 result_card、figure_card 和候选顶点表。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"

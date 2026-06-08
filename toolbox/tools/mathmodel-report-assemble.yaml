@@ -1,0 +1,54 @@
+name: "mathmodel-report-assemble"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    TEMPLATE_DIR="$1"
+    BODY="$2"
+    OUTPUT="$3"
+    SECTIONS_DIR="${4:-}"
+    TITLE="${5:-}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_report.py" assemble --template-dir "$TEMPLATE_DIR" --body "$BODY" --out "$OUTPUT")
+    if [ -n "$SECTIONS_DIR" ]; then CMD+=(--sections-dir "$SECTIONS_DIR"); fi
+    if [ -n "$TITLE" ]; then CMD+=(--title "$TITLE"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "拼接正文模板和 paper_section_card，生成 paper.tex"
+description: |
+  从 LaTeX 模板目录和正文模板生成 paper.tex、paper-body.tex 和 assemble_report.json；可追加章节卡片目录。
+parameters:
+  - name: "template_dir"
+    type: "string"
+    description: "convert-template 输出的 LaTeX 模板目录。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "body_template"
+    type: "string"
+    description: "正文模板 Markdown 路径。"
+    required: true
+    position: 1
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "paper.tex 输出目录。"
+    required: true
+    position: 2
+    format: "positional"
+  - name: "sections_dir"
+    type: "string"
+    description: "可选 paper_section_card Markdown 目录。"
+    required: false
+    default: ""
+    position: 3
+    format: "positional"
+  - name: "title"
+    type: "string"
+    description: "可选论文标题。"
+    required: false
+    default: ""
+    position: 4
+    format: "positional"

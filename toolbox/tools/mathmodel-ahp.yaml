@@ -1,0 +1,49 @@
+name: "mathmodel-ahp"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    INPUT="$1"
+    LABELS="${2:-}"
+    OUTPUT="${3:-}"
+    CR_THRESHOLD="${4:-0.1}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_toolkit.py" ahp --input "$INPUT" --cr-threshold "$CR_THRESHOLD")
+    if [ -n "$LABELS" ]; then CMD+=(--labels "$LABELS"); fi
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "AHP 计算权重与一致性并输出 result_card / figure_card"
+description: |
+  调用 mathmodel-toolkit 的 AHP 方法，读取方阵 CSV，计算指标权重、CI、CR 和一致性结论。
+  输出 JSON 到 stdout；若提供 output_dir，会生成 result.json、result_card.md、figure_card.md 和 weights_table.csv。
+parameters:
+  - name: "input"
+    type: "string"
+    description: "方阵 CSV 路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "labels"
+    type: "string"
+    description: "可选，逗号分隔的指标名，例如 cost,quality,time。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "可选输出目录；提供后写入 result_card 和 figure_card。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"
+  - name: "cr_threshold"
+    type: "string"
+    description: "一致性阈值，默认 0.1。"
+    required: false
+    default: "0.1"
+    position: 3
+    format: "positional"

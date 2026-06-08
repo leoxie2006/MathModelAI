@@ -1,0 +1,13 @@
+{
+  "iterations": 5000,
+  "seed": 42,
+  "variables": {
+    "price": {"dist": "normal", "mean": 120, "sd": 8},
+    "demand": {"dist": "normal", "mean": 1000, "sd": 120},
+    "unit_cost": {"dist": "uniform", "low": 55, "high": 70},
+    "fixed_cost": {"dist": "uniform", "low": 20000, "high": 26000}
+  },
+  "expression": "(price - unit_cost) * demand - fixed_cost",
+  "constraints": ["demand >= 0", "price >= unit_cost"],
+  "threshold": 30000
+}

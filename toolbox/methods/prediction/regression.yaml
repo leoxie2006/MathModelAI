@@ -1,0 +1,29 @@
+id: regression
+name: 回归模型
+category: prediction
+applies_when: 目标变量为连续值，需要解释变量影响或进行数值预测。
+inputs:
+  - 特征矩阵
+  - 连续目标变量
+  - 训练/验证划分
+  - 特征预处理配置
+outputs:
+  - 回归系数或特征重要性
+  - 预测值
+  - MAE/RMSE/R2 等指标
+  - 残差诊断图
+assumptions:
+  - 训练样本能代表预测对象
+  - 特征与目标关系可由模型近似
+  - 训练数据不含未来信息
+validation:
+  - 交叉验证
+  - 残差分布检查
+  - 多重共线性检查
+  - 训练/测试误差对照
+pitfalls:
+  - 数据泄露
+  - 用 R2 掩盖预测误差
+  - 特征未标准化却比较系数大小
+  - 外推区间过远
+future_cli: mathmodel-toolkit regression --input data.xlsx --config config.yaml

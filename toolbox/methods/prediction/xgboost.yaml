@@ -1,0 +1,29 @@
+id: xgboost
+name: XGBoost
+category: prediction
+applies_when: 表格数据预测、非线性关系明显、需要较强预测性能并可解释特征贡献。
+inputs:
+  - 特征矩阵
+  - 目标变量
+  - 训练/验证/测试划分
+  - 超参数搜索范围
+outputs:
+  - 预测值
+  - 评价指标
+  - 特征重要性
+  - 训练日志与模型文件
+assumptions:
+  - 样本量足够支撑树模型
+  - 划分方式避免时间或分组泄露
+  - 超参数调优在验证集上完成
+validation:
+  - 交叉验证或时间滚动验证
+  - 与线性/简单树模型基线对照
+  - 检查过拟合差距
+  - SHAP 或特征重要性解释
+pitfalls:
+  - 测试集参与调参
+  - 缺少随机种子
+  - 只追求指标不解释模型
+  - 类别特征编码不一致
+future_cli: mathmodel-toolkit xgboost --input data.xlsx --config config.yaml

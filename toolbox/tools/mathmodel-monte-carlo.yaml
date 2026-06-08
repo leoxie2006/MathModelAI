@@ -1,0 +1,50 @@
+name: "mathmodel-monte-carlo"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    CONFIG="$1"
+    OUTPUT="${2:-}"
+    ITERATIONS="${3:-}"
+    EXPRESSION="${4:-}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_toolkit.py" monte-carlo --config "$CONFIG")
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    if [ -n "$ITERATIONS" ]; then CMD+=(--iterations "$ITERATIONS"); fi
+    if [ -n "$EXPRESSION" ]; then CMD+=(--expression "$EXPRESSION"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "蒙特卡洛仿真并输出分位数、可行率和结果卡"
+description: |
+  调用 mathmodel-toolkit 的 monte-carlo 命令，按 JSON 中的变量分布和表达式进行仿真。
+  支持 uniform、normal、triangular、randint、choice 分布。
+parameters:
+  - name: "config"
+    type: "string"
+    description: "蒙特卡洛 JSON 配置路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "可选输出目录。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "iterations"
+    type: "string"
+    description: "可选迭代次数覆盖值。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"
+  - name: "expression"
+    type: "string"
+    description: "可选目标表达式覆盖值。"
+    required: false
+    default: ""
+    position: 3
+    format: "positional"

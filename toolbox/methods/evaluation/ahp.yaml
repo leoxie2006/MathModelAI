@@ -1,0 +1,28 @@
+id: ahp
+name: 层次分析法
+category: evaluation
+applies_when: 指标权重需要专家判断或主观偏好，并可构造层次结构。
+inputs:
+  - 目标层、准则层、方案层
+  - 成对比较矩阵
+  - 一致性阈值
+outputs:
+  - 指标权重
+  - 一致性比率 CR
+  - 方案综合得分
+  - 权重解释
+assumptions:
+  - 专家判断可表达为成对比较
+  - 判断矩阵满足基本一致性
+  - 指标层次结构合理
+validation:
+  - CR 一致性检验
+  - 权重扰动
+  - 多专家结果对比
+  - 与熵权法或等权结果比较
+pitfalls:
+  - 判断矩阵不一致仍使用
+  - 专家来源不说明
+  - 层次结构重复或遗漏指标
+  - 权重主观性没有敏感性分析
+future_cli: mathmodel-toolkit ahp --input matrix.xlsx --config config.yaml

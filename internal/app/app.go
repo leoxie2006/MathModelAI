@@ -41,8 +41,7 @@ type App struct {
 	agent              *agent.Agent
 	executor           *security.Executor
 	db                 *database.DB
-	knowledgeDB        *database.DB // 知识库数据库连接（如果使用独立数据库）
-	auth               *security.AuthManager
+	knowledgeDB        *database.DB              // 知识库数据库连接（如果使用独立数据库）
 	knowledgeManager   *knowledge.Manager        // 知识库管理器（用于动态初始化）
 	knowledgeRetriever *knowledge.Retriever      // 知识库检索器（用于动态初始化）
 	knowledgeIndexer   *knowledge.Indexer        // 知识库索引器（用于动态初始化）
@@ -58,12 +57,6 @@ func New(cfg *config.Config, log *logger.Logger, configPath string) (*App, error
 
 	// CORS中间件
 	router.Use(corsMiddleware())
-
-	// 认证管理器
-	authManager, err := security.NewAuthManager(cfg.Auth.Password, cfg.Auth.SessionDurationHours)
-	if err != nil {
-		return nil, fmt.Errorf("初始化认证失败: %w", err)
-	}
 
 	// 初始化数据库
 	dbPath := cfg.Database.Path
@@ -97,13 +90,6 @@ func New(cfg *config.Config, log *logger.Logger, configPath string) (*App, error
 	executor.RegisterTools(mcpServer)
 
 	registerProjectFactTools(mcpServer, db, cfg, log.Logger)
-
-	if cfg.Auth.GeneratedPassword != "" {
-		config.PrintGeneratedPasswordWarning(cfg.Auth.GeneratedPassword, cfg.Auth.GeneratedPasswordPersisted, cfg.Auth.GeneratedPasswordPersistErr)
-		cfg.Auth.GeneratedPassword = ""
-		cfg.Auth.GeneratedPasswordPersisted = false
-		cfg.Auth.GeneratedPasswordPersistErr = ""
-	}
 
 	// 创建外部MCP管理器（使用与内部MCP服务器相同的存储）
 	externalMCPMgr := mcp.NewExternalMCPManagerWithStorage(log.Logger, db)
@@ -310,8 +296,6 @@ func New(cfg *config.Config, log *logger.Logger, configPath string) (*App, error
 	if err := os.MkdirAll(agentsDir, 0755); err != nil {
 		log.Logger.Warn("创建 agents 目录失败", zap.String("path", agentsDir), zap.Error(err))
 	}
-	markdownAgentsHandler := handler.NewMarkdownAgentsHandler(agentsDir)
-	markdownAgentsHandler.SetAudit(auditSvc)
 	log.Logger.Info("多代理 Markdown 子 Agent 目录", zap.String("agentsDir", agentsDir))
 
 	// 创建处理器
@@ -322,12 +306,7 @@ func New(cfg *config.Config, log *logger.Logger, configPath string) (*App, error
 	if knowledgeManager != nil {
 		agentHandler.SetKnowledgeManager(knowledgeManager)
 	}
-	monitorHandler := handler.NewMonitorHandler(mcpServer, executor, db, log.Logger)
-	monitorHandler.SetAudit(auditSvc)
-	monitorHandler.SetExternalMCPManager(externalMCPMgr) // 设置外部MCP管理器，以便获取外部MCP执行记录
 	groupHandler := handler.NewGroupHandler(db, log.Logger)
-	authHandler := handler.NewAuthHandler(authManager, cfg, configPath, log.Logger)
-	authHandler.SetAudit(auditSvc)
 	projectHandler := handler.NewProjectHandler(db, log.Logger)
 	configHandler := handler.NewConfigHandler(configPath, cfg, mcpServer, executor, agent, externalMCPMgr, log.Logger)
 	configHandler.SetAudit(auditSvc)
@@ -343,8 +322,6 @@ func New(cfg *config.Config, log *logger.Logger, configPath string) (*App, error
 
 	conversationHandler := handler.NewConversationHandler(db, log.Logger)
 	conversationHandler.SetAudit(auditSvc)
-	auditHandler := handler.NewAuditHandler(db, auditSvc, log.Logger)
-
 	// 创建 App 实例（部分字段稍后填充）
 	app := &App{
 		config:             cfg,
@@ -356,7 +333,6 @@ func New(cfg *config.Config, log *logger.Logger, configPath string) (*App, error
 		executor:           executor,
 		db:                 db,
 		knowledgeDB:        knowledgeDBConn,
-		auth:               authManager,
 		knowledgeManager:   knowledgeManager,
 		knowledgeRetriever: knowledgeRetriever,
 		knowledgeIndexer:   knowledgeIndexer,
@@ -407,9 +383,7 @@ func New(cfg *config.Config, log *logger.Logger, configPath string) (*App, error
 	// 设置路由（使用 App 实例以便动态获取 handler）
 	setupRoutes(
 		router,
-		authHandler,
 		agentHandler,
-		monitorHandler,
 		conversationHandler,
 		groupHandler,
 		configHandler,
@@ -418,10 +392,7 @@ func New(cfg *config.Config, log *logger.Logger, configPath string) (*App, error
 		projectHandler,
 		roleHandler,
 		skillsHandler,
-		markdownAgentsHandler,
-		auditHandler,
 		mcpServer,
-		authManager,
 	)
 
 	return app, nil
@@ -585,9 +556,7 @@ func (a *App) Shutdown() {
 // setupRoutes 设置路由
 func setupRoutes(
 	router *gin.Engine,
-	authHandler *handler.AuthHandler,
 	agentHandler *handler.AgentHandler,
-	monitorHandler *handler.MonitorHandler,
 	conversationHandler *handler.ConversationHandler,
 	groupHandler *handler.GroupHandler,
 	configHandler *handler.ConfigHandler,
@@ -596,25 +565,12 @@ func setupRoutes(
 	projectHandler *handler.ProjectHandler,
 	roleHandler *handler.RoleHandler,
 	skillsHandler *handler.SkillsHandler,
-	markdownAgentsHandler *handler.MarkdownAgentsHandler,
-	auditHandler *handler.AuditHandler,
 	mcpServer *mcp.Server,
-	authManager *security.AuthManager,
 ) {
 	// API路由
 	api := router.Group("/api")
 
-	// 认证相关路由
-	authRoutes := api.Group("/auth")
-	{
-		authRoutes.POST("/login", authHandler.Login)
-		authRoutes.POST("/logout", security.AuthMiddleware(authManager), authHandler.Logout)
-		authRoutes.POST("/change-password", security.AuthMiddleware(authManager), authHandler.ChangePassword)
-		authRoutes.GET("/validate", security.AuthMiddleware(authManager), authHandler.Validate)
-	}
-
 	protected := api.Group("")
-	protected.Use(security.AuthMiddleware(authManager))
 	{
 		// Eino ADK 单代理（ChatModelAgent + Runner；不依赖 multi_agent.enabled）
 		protected.POST("/eino-agent", agentHandler.EinoSingleAgentLoop)
@@ -628,11 +584,6 @@ func setupRoutes(
 		// 多代理路由常注册；是否可用由运行时 h.config.MultiAgent.Enabled 决定（应用配置后无需重启）
 		protected.POST("/multi-agent", agentHandler.MultiAgentLoop)
 		protected.POST("/multi-agent/stream", agentHandler.MultiAgentLoopStream)
-		protected.GET("/multi-agent/markdown-agents", markdownAgentsHandler.ListMarkdownAgents)
-		protected.GET("/multi-agent/markdown-agents/:filename", markdownAgentsHandler.GetMarkdownAgent)
-		protected.POST("/multi-agent/markdown-agents", markdownAgentsHandler.CreateMarkdownAgent)
-		protected.PUT("/multi-agent/markdown-agents/:filename", markdownAgentsHandler.UpdateMarkdownAgent)
-		protected.DELETE("/multi-agent/markdown-agents/:filename", markdownAgentsHandler.DeleteMarkdownAgent)
 
 		// 对话历史
 		protected.POST("/conversations", conversationHandler.CreateConversation)
@@ -658,15 +609,6 @@ func setupRoutes(
 		protected.DELETE("/groups/:id/conversations/:conversationId", groupHandler.RemoveConversationFromGroup)
 		protected.PUT("/groups/:id/conversations/:conversationId/pinned", groupHandler.UpdateConversationPinnedInGroup)
 
-		// 监控
-		protected.GET("/monitor", monitorHandler.Monitor)
-		protected.GET("/monitor/execution/:id", monitorHandler.GetExecution)
-		protected.POST("/monitor/execution/:id/cancel", monitorHandler.CancelExecution)
-		protected.POST("/monitor/executions/names", monitorHandler.BatchGetToolNames)
-		protected.DELETE("/monitor/execution/:id", monitorHandler.DeleteExecution)
-		protected.DELETE("/monitor/executions", monitorHandler.DeleteExecutions)
-		protected.GET("/monitor/stats", monitorHandler.GetStats)
-
 		// 配置管理
 		protected.GET("/config", configHandler.GetConfig)
 		protected.GET("/config/tools", configHandler.GetTools)
@@ -674,9 +616,6 @@ func setupRoutes(
 		protected.PUT("/config", configHandler.UpdateConfig)
 		protected.POST("/config/apply", configHandler.ApplyConfig)
 		protected.POST("/config/test-openai", configHandler.TestOpenAI)
-
-		// 平台审计日志：内部配置页不展示，保留元信息供核心配置诊断使用。
-		protected.GET("/audit/meta", auditHandler.Meta)
 
 		// 外部MCP管理
 		protected.GET("/external-mcp", externalMCPHandler.GetExternalMCPs)

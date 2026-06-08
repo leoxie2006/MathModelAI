@@ -1,0 +1,29 @@
+id: genetic-algorithm
+name: 遗传算法
+category: optimization
+applies_when: 搜索空间复杂、目标函数不可导或存在组合结构，适合启发式近似优化。
+inputs:
+  - 个体编码方式
+  - 适应度函数
+  - 约束处理策略
+  - 种群规模、交叉率、变异率和迭代次数
+outputs:
+  - 最优个体
+  - 适应度曲线
+  - 多次运行稳定性
+  - 约束违反统计
+assumptions:
+  - 编码能完整表达可行解
+  - 适应度函数与题目目标一致
+  - 随机搜索可接受且记录随机种子
+validation:
+  - 固定 seed 复现
+  - 多 seed 统计稳定性
+  - 与贪心或小规模精确解对照
+  - 检查约束违反惩罚
+pitfalls:
+  - 只报最好一次结果
+  - 参数选择无依据
+  - 适应度函数遗漏硬约束
+  - 收敛曲线无法说明稳定性
+future_cli: mathmodel-toolkit ga --input data.xlsx --config config.yaml

@@ -1,0 +1,29 @@
+id: system-dynamics
+name: 系统动力学
+category: simulation
+applies_when: 多变量反馈系统随时间演化，适合资源、人口、生态、经济和管理系统模拟。
+inputs:
+  - 存量变量
+  - 流量方程
+  - 反馈关系
+  - 初值与仿真时间
+outputs:
+  - 时间序列结果
+  - 反馈回路解释
+  - 情景对比
+  - 敏感性分析
+assumptions:
+  - 反馈结构能表达主要机制
+  - 参数有数据或文献依据
+  - 时间步长足够小
+validation:
+  - 量纲一致性检查
+  - 历史数据拟合
+  - 极端条件测试
+  - 关键参数敏感性
+pitfalls:
+  - 因果回路画得复杂但方程缺失
+  - 参数凭空设定
+  - 时间步长造成数值误差
+  - 情景结论缺少不确定性说明
+future_cli: mathmodel-toolkit system-dynamics --input config.yaml --output result.json

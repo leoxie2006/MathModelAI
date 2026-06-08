@@ -1,0 +1,57 @@
+name: "mathmodel-run-python"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    WORKSPACE="$1"
+    SCRIPT="${2:-}"
+    CODE="${3:-}"
+    OUTPUT="${4:-}"
+    TIMEOUT="${5:-300}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_pipeline.py" run --workspace "$WORKSPACE" --timeout "$TIMEOUT")
+    if [ -n "$SCRIPT" ]; then CMD+=(--script "$SCRIPT"); fi
+    if [ -n "$CODE" ]; then CMD+=(--code "$CODE"); fi
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "运行 Python 建模脚本并生成 notebook/code_card/result_card"
+description: |
+  持久化执行 Python 建模脚本，生成 script.py、notebook.ipynb、execution.json、result.json、code_card.md、result_card.md 和 repro_command.sh。
+parameters:
+  - name: "workspace"
+    type: "string"
+    description: "持久化运行工作区目录。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "script"
+    type: "string"
+    description: "可选 Python 脚本路径；script 和 code 至少提供一个。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "code"
+    type: "string"
+    description: "可选内联 Python 代码。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "可选运行输出目录。"
+    required: false
+    default: ""
+    position: 3
+    format: "positional"
+  - name: "timeout"
+    type: "string"
+    description: "超时时间秒数，默认 300。"
+    required: false
+    default: "300"
+    position: 4
+    format: "positional"

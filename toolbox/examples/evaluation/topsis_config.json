@@ -1,0 +1,13 @@
+{
+  "columns": ["cost", "quality", "time"],
+  "directions": {
+    "cost": "negative",
+    "quality": "positive",
+    "time": "negative"
+  },
+  "weights": {
+    "cost": 0.35,
+    "quality": 0.45,
+    "time": 0.20
+  }
+}

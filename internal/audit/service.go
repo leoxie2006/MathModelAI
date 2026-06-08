@@ -1,14 +1,11 @@
 package audit
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"strings"
 	"time"
 
 	"mathmodel-ai/internal/config"
 	"mathmodel-ai/internal/database"
-	"mathmodel-ai/internal/security"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -69,11 +66,6 @@ func (s *Service) Record(c *gin.Context, e Entry) {
 	detail := SanitizeDetail(e.Detail, maxDetail)
 
 	sessionHintVal := e.SessionHint
-	if sessionHintVal == "" && c != nil {
-		if token := c.GetString(security.ContextAuthTokenKey); token != "" {
-			sessionHintVal = sessionHint(token)
-		}
-	}
 	clientIPVal := e.ClientIP
 	if clientIPVal == "" {
 		clientIPVal = clientIP(c)
@@ -128,20 +120,6 @@ func (s *Service) PurgeExpired() {
 	if n > 0 && s.logger != nil {
 		s.logger.Info("已清理过期审计日志", zap.Int64("deleted", n))
 	}
-}
-
-// HintFromToken returns a short stable hash prefix for a session token.
-func HintFromToken(token string) string {
-	return sessionHint(token)
-}
-
-func sessionHint(token string) string {
-	token = strings.TrimSpace(token)
-	if token == "" {
-		return ""
-	}
-	sum := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(sum[:4])
 }
 
 func (s *Service) allowFailureAudit(c *gin.Context, e Entry) bool {

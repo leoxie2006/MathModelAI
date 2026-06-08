@@ -1,0 +1,29 @@
+id: cellular-automata
+name: 元胞自动机
+category: simulation
+applies_when: 空间网格中个体状态按局部规则演化，适合扩散、交通、疏散、传播和土地利用模拟。
+inputs:
+  - 网格初始状态
+  - 邻域规则
+  - 状态转移规则
+  - 迭代步数
+outputs:
+  - 状态演化序列
+  - 关键指标曲线
+  - 空间分布图
+  - 参数敏感性
+assumptions:
+  - 局部规则可近似宏观行为
+  - 网格尺度和边界条件合理
+  - 初始状态有依据
+validation:
+  - 小网格手工验证
+  - 与历史演化或常识对照
+  - 参数扰动
+  - 边界条件敏感性
+pitfalls:
+  - 规则主观且无校准
+  - 网格尺度影响结论
+  - 随机更新顺序未说明
+  - 只展示动画不提取指标
+future_cli: mathmodel-toolkit cellular --input config.yaml --output result.json

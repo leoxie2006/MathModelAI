@@ -8,11 +8,7 @@ server:
   host: 0.0.0.0
   port: 8080
   tls_enabled: false
-  tls_auto_self_sign: true
-
-auth:
-  password: bc3g8QKyqaW55IaSamaNhh5b
-  session_duration_hours: 12
+  tls_auto_self_sign: false
 
 log:
   level: info
@@ -68,7 +64,7 @@ multi_agent:
     tool_search_enable: true
     tool_search_min_tools: 20
     tool_search_always_visible: 12
-    tool_search_always_visible_tools: [read_file, glob, grep, analyze_image, write_file, edit_file, execute, task, transfer_to_agent, exit, write_todos, skill, tool_search, TaskCreate, TaskGet, TaskUpdate, TaskList, search_knowledge_base, execute-python-script, exec]
+    tool_search_always_visible_tools: [read_file, glob, grep, analyze_image, write_file, edit_file, execute, task, transfer_to_agent, exit, write_todos, skill, tool_search, TaskCreate, TaskGet, TaskUpdate, TaskList, search_knowledge_base, execute-python-script, exec, mathmodel-topsis, mathmodel-entropy-weight, mathmodel-ahp, mathmodel-linear-programming, mathmodel-regression, mathmodel-gm11, mathmodel-exponential-smoothing, mathmodel-monte-carlo, mathmodel-run-python, mathmodel-review-code, mathmodel-structure-results, mathmodel-validate-results, mathmodel-report-convert-template, mathmodel-report-assemble, mathmodel-report-preflight, mathmodel-report-compile]
     plantask_enable: false
     plantask_rel_dir: .eino/plantask
     reduction_enable: true
@@ -158,5 +154,5 @@ project:
   default_inject_deprecated: false
 
 security:
-  tools_dir: tools
+  tools_dir: toolbox/tools
   tool_description_mode: full

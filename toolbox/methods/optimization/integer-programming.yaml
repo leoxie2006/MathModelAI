@@ -1,0 +1,29 @@
+id: integer-programming
+name: 整数规划
+category: optimization
+applies_when: 决策变量必须为整数或 0-1 选择，适合任务分配、路径选择、设施启用和组合优化。
+inputs:
+  - 整数或二进制变量定义
+  - 目标函数
+  - 线性约束
+  - Big-M 或逻辑约束配置
+outputs:
+  - 最优或近似最优组合
+  - 目标函数值
+  - 求解状态与 gap
+  - 约束满足报告
+assumptions:
+  - 离散变量能表达真实选择
+  - 问题规模在求解器可承受范围内
+  - Big-M 取值不会造成数值不稳定
+validation:
+  - 小规模暴力枚举对照
+  - 检查 integrality gap
+  - 检查所有逻辑约束触发条件
+  - 对 Big-M 和关键成本扰动
+pitfalls:
+  - Big-M 过大导致数值病态
+  - 忘记互斥、唯一选择或容量约束
+  - 求解超时却误把可行解当最优解
+  - 变量数量膨胀导致无法复现
+future_cli: mathmodel-toolkit mip --input data.xlsx --config config.yaml

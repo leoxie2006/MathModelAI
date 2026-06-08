@@ -1,0 +1,22 @@
+# Local environment
+venv/
+.venv/
+.venvs/
+
+# Runtime data
+data/
+tmp/
+*.db
+*.db-shm
+*.db-wal
+
+# Build outputs
+mathmodel-ai
+*.exe
+
+# Local editor/workspace files
+*.code-workspace
+.DS_Store
+
+# Logs
+*.log

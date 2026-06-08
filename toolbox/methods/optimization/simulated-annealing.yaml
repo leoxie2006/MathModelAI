@@ -1,0 +1,29 @@
+id: simulated-annealing
+name: 模拟退火
+category: optimization
+applies_when: 需要跳出局部最优的单解搜索，适合路径、排序、布局和参数组合优化。
+inputs:
+  - 初始解
+  - 邻域生成规则
+  - 目标函数
+  - 初温、降温策略、终止条件
+outputs:
+  - 最优解与目标值
+  - 温度-目标曲线
+  - 接受率统计
+  - 多次运行结果分布
+assumptions:
+  - 邻域操作能连通主要可行域
+  - 温度计划覆盖充分探索与收敛
+  - 目标函数可快速重复计算
+validation:
+  - 多 seed 重复运行
+  - 与贪心或局部搜索对照
+  - 检查接受率随温度下降
+  - 扰动初始解
+pitfalls:
+  - 降温过快导致早熟
+  - 邻域操作产生大量不可行解
+  - 未记录随机种子
+  - 缺少基线导致无法证明改进
+future_cli: mathmodel-toolkit sa --input data.xlsx --config config.yaml

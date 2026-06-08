@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"mathmodel-ai/internal/database"
-	"mathmodel-ai/internal/security"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,8 +47,5 @@ func ConversationCreateMetaFromGin(c *gin.Context, source string) database.Conve
 		return m
 	}
 	m.ClientIP = c.ClientIP()
-	if token := c.GetString(security.ContextAuthTokenKey); token != "" {
-		m.SessionHint = sessionHint(token)
-	}
 	return m
 }

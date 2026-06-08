@@ -42,7 +42,7 @@ func BuildFactIndexBlock(db *database.DB, projectID string, cfg config.ProjectCo
 		return "", err
 	}
 	if len(facts) == 0 {
-		return fmt.Sprintf("## 项目黑板索引（project: %s, id: %s）\n（暂无事实）\n需要写入请使用 upsert_project_fact；需要详情请调用 get_project_fact(fact_key)。", proj.Name, proj.ID), nil
+		return fmt.Sprintf("## 项目黑板索引（project: %s, id: %s）\n（暂无建模卡片）\n需要写入请使用 upsert_project_fact；需要详情请调用 get_project_fact(fact_key)。", proj.Name, proj.ID), nil
 	}
 
 	sort.SliceStable(facts, func(i, j int) bool {
@@ -72,7 +72,7 @@ func BuildFactIndexBlock(db *database.DB, projectID string, cfg config.ProjectCo
 	if omitted > 0 {
 		b.WriteString(fmt.Sprintf("\n（另有 %d 条未列入索引，请使用 list_project_facts 或 search_project_facts 查询。）\n", omitted))
 	}
-	b.WriteString("需要完整内容（攻击链、POC、请求响应等）时必须调用 get_project_fact(fact_key)，禁止凭摘要臆造细节。\n")
-	b.WriteString("写入事实时：summary 写「什么+在哪+如何验证」；body 写可复现全流程（发现/利用类 fact_key 建议 finding|chain|exploit|poc/ 前缀）。\n")
+	b.WriteString("需要完整内容（题意、数据审计、模型规格、代码入口、结果、图表、论文或评审细节）时必须调用 get_project_fact(fact_key)，禁止凭摘要臆造细节。\n")
+	b.WriteString("写入卡片时：summary 写「什么 + 属于哪个问题/文件/模型 + 如何验证或使用」；body 写结构化证据、产物路径和交叉复核结论（fact_key 建议 problem|data|model|code|result|figure|paper|review/ 前缀）。\n")
 	return b.String(), nil
 }

@@ -2,7 +2,7 @@ package project
 
 import "mathmodel-ai/internal/database"
 
-// GetProjectStats 聚合项目统计（含待补全事实数）。
+// GetProjectStats 聚合项目统计（含待补全建模卡片数）。
 func GetProjectStats(db *database.DB, projectID string) (*database.ProjectStats, error) {
 	stats, err := db.GetProjectStatsCounts(projectID)
 	if err != nil {

@@ -1,0 +1,29 @@
+id: multi-objective-optimization
+name: 多目标优化
+category: optimization
+applies_when: 需要同时平衡成本、收益、风险、时间、资源等多个互相冲突目标。
+inputs:
+  - 多个目标函数
+  - 决策变量与约束
+  - 权重或偏好信息
+  - Pareto 搜索配置
+outputs:
+  - Pareto 解集或加权最优解
+  - 目标值矩阵
+  - 折中方案解释
+  - 敏感性图表
+assumptions:
+  - 各目标可量化并可比较
+  - 权重或偏好来源可解释
+  - 可接受折中而非单一绝对最优
+validation:
+  - 权重扰动
+  - Pareto 支配关系检查
+  - 极端权重方案对照
+  - 与单目标解比较
+pitfalls:
+  - 权重无来源
+  - 目标同向化错误
+  - 忽略不可行解过滤
+  - 把单一加权结果误称 Pareto 前沿
+future_cli: mathmodel-toolkit moo --input data.xlsx --config config.yaml

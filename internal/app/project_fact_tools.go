@@ -48,32 +48,32 @@ func registerProjectFactTools(mcpServer *mcp.Server, db *database.DB, cfg *confi
 
 	upsertTool := mcp.Tool{
 		Name: builtin.ToolUpsertProjectFact,
-		Description: "写入或更新项目黑板事实，用于跨会话沉淀可复现上下文（非正式漏洞条目；可交付漏洞另用 record_vulnerability）。" +
-			"边渗透边记录：每确认新认知（端口/入口/凭据/可利用点）后立即调用，同 fact_key 覆盖更新，勿等会话结束。" +
-			"禁止仅写结论：summary 须含什么+在哪+如何验证；body 须含攻击链/请求响应/命令等复现细节。" +
-			"发现类建议 fact_key 为 finding|chain|exploit|poc/<slug>，category 对应 finding|chain|exploit|poc，body 按攻击链模板填写。" +
-			"环境类用 target|auth|infra|business/<slug>。同 fact_key 覆盖更新。需当前对话已绑定项目。",
-		ShortDescription: "写入/更新项目事实（含攻击链 body）",
+		Description: "写入或更新项目黑板卡片，用于跨会话沉淀数学建模协作上下文。" +
+			"边建模边记录：每确认题意、数据、模型、代码、结果、图表、论文或评审结论后立即调用，同 fact_key 覆盖更新，勿等阶段结束。" +
+			"禁止仅写结论：summary 须含什么+属于哪个问题/文件/模型+如何验证或使用；body 须含结构化卡片、证据来源和产物路径。" +
+			"建议 fact_key 为 problem|data|model|code|result|figure|paper|review/<slug>，category 对应同名前缀。" +
+			"需当前对话已绑定项目。",
+		ShortDescription: "写入/更新项目黑板卡片",
 		InputSchema: map[string]interface{}{
 			"type": "object",
 			"properties": map[string]interface{}{
 				"fact_key": map[string]interface{}{
 					"type":        "string",
-					"description": "项目内唯一 key：target/primary_domain、finding/sqli-login、exploit/upload-rce 等",
+					"description": "项目内唯一 key：problem/requirements、data/attachment-audit、model/topsis-plan、code/solver、result/problem-1、paper/model-section 等",
 				},
 				"category": map[string]interface{}{
 					"type":        "string",
-					"description": "target | auth | infra | business | finding | chain | exploit | poc | note",
-					"enum":        []string{"target", "auth", "infra", "business", "finding", "chain", "exploit", "poc", "note"},
+					"description": "problem | data | model | code | result | figure | paper | review | note",
+					"enum":        []string{"problem", "data", "model", "code", "result", "figure", "paper", "review", "note"},
 				},
 				"summary": map[string]interface{}{
 					"type":        "string",
-					"description": "索引用一行：结论 + 位置 + 触发/验证要点（勿仅写「存在 XSS」等空话）",
+					"description": "索引用一行：什么 + 属于哪个问题/文件/模型 + 如何验证或使用",
 				},
 				"body": map[string]interface{}{
 					"type": "string",
-					"description": "完整可复现详情（仅 get_project_fact 返回）：须含攻击链步骤、原始 HTTP/命令、响应现象、证据与关联。" +
-						"发现/利用类首次写入必填；环境类建议含来源证据。攻击链类可参考模板章节：结论、目标与入口、攻击链、Exploit/POC、关键证据、关联、备注。" +
+					"description": "结构化建模卡片详情（仅 get_project_fact 返回）：须含输入、输出、依据、验证方式、证据来源和产物路径。" +
+						"problem/data/model/code/result/figure/paper/review 类首次写入应填写完整 body；note 类也建议记录来源证据。" +
 						"更新已有 fact_key 时若省略或留空 body，将保留库中已有 body（可只改 summary）。",
 				},
 				"confidence": map[string]interface{}{
@@ -87,7 +87,7 @@ func registerProjectFactTools(mcpServer *mcp.Server, db *database.DB, cfg *confi
 				},
 				"related_vulnerability_id": map[string]interface{}{
 					"type":        "string",
-					"description": "可选：关联的漏洞记录 ID",
+					"description": "兼容旧数据的可选字段；数学建模流程通常留空",
 				},
 			},
 			"required": []string{"fact_key", "summary"},

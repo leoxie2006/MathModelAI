@@ -1,0 +1,29 @@
+id: fuzzy-comprehensive-evaluation
+name: 模糊综合评价
+category: evaluation
+applies_when: 指标边界模糊、评价等级离散且需要表达隶属度，如风险、满意度、质量等级。
+inputs:
+  - 指标集
+  - 评价等级集
+  - 指标权重
+  - 隶属度矩阵
+outputs:
+  - 综合隶属度
+  - 等级判定
+  - 得分或排序
+  - 指标贡献解释
+assumptions:
+  - 隶属函数能表达模糊边界
+  - 权重与评价等级定义合理
+  - 指标之间可聚合
+validation:
+  - 隶属度行和检查
+  - 权重扰动
+  - 等级阈值敏感性
+  - 与人工评级样例对照
+pitfalls:
+  - 隶属函数无依据
+  - 权重和隶属度重复主观
+  - 等级解释不清
+  - 只给等级不解释贡献
+future_cli: mathmodel-toolkit fuzzy-eval --input data.xlsx --config config.yaml

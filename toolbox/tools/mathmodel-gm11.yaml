@@ -1,0 +1,48 @@
+name: "mathmodel-gm11"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    INPUT="$1"
+    VALUE_COLUMN="${2:-}"
+    OUTPUT="${3:-}"
+    STEPS="${4:-3}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_toolkit.py" gm11 --input "$INPUT" --forecast-steps "$STEPS")
+    if [ -n "$VALUE_COLUMN" ]; then CMD+=(--value-column "$VALUE_COLUMN"); fi
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "GM(1,1) 灰色预测并输出预测表和结果卡"
+description: |
+  调用 mathmodel-toolkit 的 gm11 命令，对正数时间序列做 GM(1,1) 预测。
+parameters:
+  - name: "input"
+    type: "string"
+    description: "带表头 CSV 序列数据路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "value_column"
+    type: "string"
+    description: "可选数值列名；留空自动推断第一个数值列。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "可选输出目录。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"
+  - name: "forecast_steps"
+    type: "string"
+    description: "预测步数，默认 3。"
+    required: false
+    default: "3"
+    position: 3
+    format: "positional"

@@ -5,38 +5,38 @@ import (
 	"testing"
 )
 
-func TestRequiresAttackChainBody(t *testing.T) {
+func TestRequiresStructuredFactBody(t *testing.T) {
 	cases := []struct {
 		cat, key string
 		want     bool
 	}{
-		{"finding", "note/misc", true},
-		{"note", "finding/sqli-login", true},
-		{"target", "target/primary_domain", false},
-		{"auth", "auth/admin_cookie", false},
-		{"chain", "x", true},
-		{"", "exploit/rce-upload", true},
+		{"problem", "note/misc", true},
+		{"note", "model/topsis-plan", true},
+		{"data", "data/attachment-audit", true},
+		{"paper", "x", true},
+		{"note", "note/misc", false},
+		{"", "result/problem-1", true},
 	}
 	for _, tc := range cases {
-		if got := RequiresAttackChainBody(tc.cat, tc.key); got != tc.want {
-			t.Errorf("RequiresAttackChainBody(%q,%q)=%v want %v", tc.cat, tc.key, got, tc.want)
+		if got := RequiresStructuredFactBody(tc.cat, tc.key); got != tc.want {
+			t.Errorf("RequiresStructuredFactBody(%q,%q)=%v want %v", tc.cat, tc.key, got, tc.want)
 		}
 	}
 }
 
 func TestIsSparseFactBody(t *testing.T) {
 	long := strings.Repeat("x", 150)
-	if !IsSparseFactBody("finding", "finding/x", "") {
+	if !IsSparseFactBody("model", "model/x", "") {
 		t.Error("empty body should be sparse")
 	}
-	if !IsSparseFactBody("finding", "finding/x", long) {
-		t.Error("body without repro clues should be sparse")
+	if !IsSparseFactBody("model", "model/x", long) {
+		t.Error("body without modeling card clues should be sparse")
 	}
-	body := "## 攻击链\n1. step\n## Exploit\n```http\nGET / HTTP/1.1\n```\n"
-	if IsSparseFactBody("finding", "finding/x", body) {
+	body := "## 模型规格\n- 变量: x\n## 验证方案\n- 基线: 线性模型\n"
+	if IsSparseFactBody("model", "model/x", body) {
 		t.Error("structured body should not be sparse")
 	}
-	if IsSparseFactBody("target", "target/x", "") {
-		t.Error("env fact empty body is ok")
+	if IsSparseFactBody("note", "note/x", "") {
+		t.Error("note fact empty body is ok")
 	}
 }

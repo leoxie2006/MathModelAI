@@ -19,6 +19,8 @@
 后续开发建议优先改造这些位置：
 
 - `agents/`：完善多代理职责。
+- `docs/TEAM_AGENT_FRAMEWORK.md`：查看“竞赛队长 + 建模手 + 编程手 + 论文手”的三层协作框架。
+- `docs/TODO.md`：查看后续完善路线图。
 - `skills/`：沉淀建模工作流。
-- `tools/`：接入 Python、优化器、绘图和数据处理工具。
+- `toolbox/`：接入 Python、优化器、绘图、数据处理和论文导出工具。
 - `knowledge_base/`：增加常用模型和案例。

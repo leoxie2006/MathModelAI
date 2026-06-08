@@ -1,0 +1,28 @@
+name: "mathmodel-report-convert-template"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    DOCX="$1"
+    OUTPUT="$2"
+    python3 "$ROOT/toolbox/cli/mathmodel_report.py" convert-template "$DOCX" --out "$OUTPUT"
+  - "_"
+enabled: true
+short_description: "解析官方 Word 模板并转换为 LaTeX 版式模板"
+description: |
+  读取官方 .docx 模板，解析页边距、样式、章节线索等结构，输出 main.tex、mathmodel-template.sty、template_layout.json 和 template_fidelity_report.md。
+parameters:
+  - name: "docx"
+    type: "string"
+    description: "官方 Word 模板 .docx 路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "LaTeX 模板输出目录。"
+    required: true
+    position: 1
+    format: "positional"

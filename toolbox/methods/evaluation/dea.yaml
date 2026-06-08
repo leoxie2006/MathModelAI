@@ -1,0 +1,29 @@
+id: dea
+name: 数据包络分析
+category: evaluation
+applies_when: 多投入多产出效率评价，适合学校、企业、城市、设备等决策单元效率比较。
+inputs:
+  - 决策单元列表
+  - 投入指标矩阵
+  - 产出指标矩阵
+  - CCR/BCC 模型配置
+outputs:
+  - 效率值
+  - 有效/无效判定
+  - 投影改进量
+  - 规模报酬分析
+assumptions:
+  - 决策单元同质可比
+  - 投入越少越好，产出越多越好
+  - 指标数量与样本量比例合理
+validation:
+  - 指标方向检查
+  - 样本量与指标数量检查
+  - 异常 DMU 影响分析
+  - 与加权评价结果对比
+pitfalls:
+  - DMU 不同质
+  - 指标过多导致多数有效
+  - 忽略规模报酬解释
+  - 未说明投入产出方向
+future_cli: mathmodel-toolkit dea --input data.xlsx --config config.yaml

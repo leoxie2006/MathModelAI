@@ -1,14 +1,17 @@
 // 页面路由管理 - 数学建模 AI 基础能力
-let currentPage = 'dashboard';
+let currentPage = 'chat';
 
 // 合法页面 ID 集合：仅包含基础能力相关页面
 const VALID_PAGES = [
-    'dashboard', 'chat', 'hitl', 'info-collect', 'projects', 'chat-files', 'settings', 'tasks',
-    'mcp-monitor', 'mcp-management',
-    'knowledge-management', 'knowledge-retrieval-logs',
+    'chat', 'projects', 'settings',
+    'team-workbench',
+    'toolbox-workbench',
+    'report-workbench',
+    'checkpoint-workbench',
+    'mcp-management',
+    'knowledge-management',
     'roles-management',
-    'skills-monitor', 'skills-management',
-    'agents-management',
+    'skills-management',
 ];
 
 /** chat 切换时保留 hash 上的查询串（?conversation= / ?conversation_id=） */
@@ -74,7 +77,7 @@ function initRouter() {
             return;
         }
     }
-    switchPage('dashboard');
+    switchPage('chat');
 }
 
 // 切换页面
@@ -107,13 +110,13 @@ function updateNavState(pageId) {
 
     // 复合子菜单: mcp / knowledge / skills / agents / roles
     const parentMap = {
-        'mcp-monitor': 'mcp',
+        'team-workbench': 'modeling-workbench',
+        'toolbox-workbench': 'modeling-workbench',
+        'report-workbench': 'modeling-workbench',
+        'checkpoint-workbench': 'modeling-workbench',
         'mcp-management': 'mcp',
         'knowledge-management': 'knowledge',
-        'knowledge-retrieval-logs': 'knowledge',
-        'skills-monitor': 'skills',
         'skills-management': 'skills',
-        'agents-management': 'agents',
         'roles-management': 'roles',
     };
     const parent = parentMap[pageId];
@@ -240,11 +243,6 @@ function showSubmenuPopup(navItem, menuId) {
 async function initPage(pageId) {
     if (window.i18nReady) await window.i18nReady;
     switch (pageId) {
-        case 'dashboard':
-            if (typeof refreshDashboard === 'function') {
-                refreshDashboard();
-            }
-            break;
         case 'chat':
             initConversationSidebarState();
             if (typeof prefetchProjectsForChat === 'function') {
@@ -252,26 +250,6 @@ async function initPage(pageId) {
             }
             if (typeof refreshChatProjectSelector === 'function') {
                 refreshChatProjectSelector();
-            }
-            break;
-        case 'hitl':
-            if (typeof refreshHitlPending === 'function') {
-                refreshHitlPending();
-            }
-            break;
-        case 'info-collect':
-            if (typeof initInfoCollectPage === 'function') {
-                initInfoCollectPage();
-            }
-            break;
-        case 'tasks':
-            if (typeof initTasksPage === 'function') {
-                initTasksPage();
-            }
-            break;
-        case 'mcp-monitor':
-            if (typeof refreshMonitorPanel === 'function') {
-                refreshMonitorPanel();
             }
             break;
         case 'mcp-management':
@@ -303,11 +281,6 @@ async function initPage(pageId) {
                 initProjectsPage();
             }
             break;
-        case 'chat-files':
-            if (typeof initChatFilesPage === 'function') {
-                initChatFilesPage();
-            }
-            break;
         case 'settings':
             if (typeof loadConfig === 'function') {
                 loadConfig(false);
@@ -324,11 +297,6 @@ async function initPage(pageId) {
                 });
             }
             break;
-        case 'skills-monitor':
-            if (typeof loadSkillsMonitor === 'function') {
-                loadSkillsMonitor();
-            }
-            break;
         case 'skills-management':
             const skillsSearchInput = document.getElementById('skills-search');
             if (skillsSearchInput) skillsSearchInput.value = '';
@@ -337,15 +305,6 @@ async function initPage(pageId) {
             if (typeof initSkillsPagination === 'function') initSkillsPagination();
             if (typeof loadSkills === 'function') loadSkills();
             break;
-        case 'agents-management':
-            if (typeof loadMarkdownAgents === 'function') {
-                loadMarkdownAgents();
-            }
-            break;
-    }
-
-    if (pageId !== 'tasks' && typeof cleanupTasksPage === 'function') {
-        cleanupTasksPage();
     }
 }
 

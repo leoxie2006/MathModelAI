@@ -1,0 +1,5 @@
+{
+  "id_column": "id",
+  "target": "sales",
+  "features": ["temperature", "price", "ad_spend"]
+}

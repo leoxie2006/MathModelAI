@@ -7,26 +7,47 @@ import (
 
 // 事实 category 常量（写入 upsert_project_fact 的 category 字段）。
 const (
-	FactCategoryTarget   = "target"
-	FactCategoryAuth     = "auth"
-	FactCategoryInfra    = "infra"
-	FactCategoryBusiness = "business"
-	FactCategoryFinding  = "finding"
-	FactCategoryChain    = "chain"
-	FactCategoryExploit  = "exploit"
-	FactCategoryPOC      = "poc"
-	FactCategoryNote     = "note"
+	FactCategoryProblem = "problem"
+	FactCategoryData    = "data"
+	FactCategoryModel   = "model"
+	FactCategoryCode    = "code"
+	FactCategoryResult  = "result"
+	FactCategoryFigure  = "figure"
+	FactCategoryPaper   = "paper"
+	FactCategoryReview  = "review"
+	FactCategoryNote    = "note"
 )
 
-// RequiresAttackChainBody 判断该事实是否应携带可复现的攻击链 / exploit 详情（写在 body，非仅 summary）。
-func RequiresAttackChainBody(category, factKey string) bool {
+var structuredModelingCategories = map[string]struct{}{
+	FactCategoryProblem: {},
+	FactCategoryData:    {},
+	FactCategoryModel:   {},
+	FactCategoryCode:    {},
+	FactCategoryResult:  {},
+	FactCategoryFigure:  {},
+	FactCategoryPaper:   {},
+	FactCategoryReview:  {},
+}
+
+var structuredModelingPrefixes = []string{
+	FactCategoryProblem + "/",
+	FactCategoryData + "/",
+	FactCategoryModel + "/",
+	FactCategoryCode + "/",
+	FactCategoryResult + "/",
+	FactCategoryFigure + "/",
+	FactCategoryPaper + "/",
+	FactCategoryReview + "/",
+}
+
+// RequiresStructuredFactBody 判断该事实是否应携带结构化建模卡片 body（非仅 summary）。
+func RequiresStructuredFactBody(category, factKey string) bool {
 	c := strings.ToLower(strings.TrimSpace(category))
-	switch c {
-	case FactCategoryFinding, FactCategoryChain, FactCategoryExploit, FactCategoryPOC, "vuln":
+	if _, ok := structuredModelingCategories[c]; ok {
 		return true
 	}
 	key := strings.ToLower(strings.TrimSpace(factKey))
-	for _, prefix := range []string{"finding/", "chain/", "exploit/", "poc/"} {
+	for _, prefix := range structuredModelingPrefixes {
 		if strings.HasPrefix(key, prefix) {
 			return true
 		}
@@ -34,9 +55,14 @@ func RequiresAttackChainBody(category, factKey string) bool {
 	return false
 }
 
-// IsSparseFactBody 攻击链类事实 body 过短或缺少关键段落时返回 true（软校验，不阻断写入）。
+// RequiresAttackChainBody 保留旧导出名以兼容调用点；当前语义已切换为建模卡片结构化 body。
+func RequiresAttackChainBody(category, factKey string) bool {
+	return RequiresStructuredFactBody(category, factKey)
+}
+
+// IsSparseFactBody 结构化建模事实 body 过短或缺少关键段落时返回 true（软校验，不阻断写入）。
 func IsSparseFactBody(category, factKey, body string) bool {
-	if !RequiresAttackChainBody(category, factKey) {
+	if !RequiresStructuredFactBody(category, factKey) {
 		return false
 	}
 	body = strings.TrimSpace(body)
@@ -44,89 +70,233 @@ func IsSparseFactBody(category, factKey, body string) bool {
 		return true
 	}
 	lower := strings.ToLower(body)
-	// 至少应包含可复现线索：步骤/请求/命令/代码块 之一
-	hasSteps := strings.Contains(lower, "攻击链") || strings.Contains(lower, "## 攻击") ||
-		strings.Contains(lower, "## exploit") || strings.Contains(lower, "## poc")
-	hasHTTP := strings.Contains(lower, "```http") || strings.Contains(lower, "```bash") ||
-		strings.Contains(lower, "curl ") || strings.Contains(lower, "get ") || strings.Contains(lower, "post ")
-	hasReq := strings.Contains(lower, "请求") || strings.Contains(lower, "响应") || strings.Contains(lower, "payload")
-	// 无攻击链/POC/请求等结构线索，视为仅结论性描述（不论长短）
-	return !(hasSteps || hasHTTP || hasReq)
+	hasHeading := strings.Contains(body, "## ") || strings.Contains(body, "### ")
+	hasEvidence := containsAny(body, []string{
+		"证据", "来源", "依据", "输入", "输出", "文件", "路径", "字段", "单位",
+		"缺失", "异常", "假设", "变量", "参数", "约束", "目标函数", "指标",
+		"验证", "误差", "敏感性", "图表", "结论", "审计", "修改", "章节",
+		"公式", "引用", "交接", "checkpoint",
+	})
+	hasArtifact := containsAny(lower, []string{
+		"```", ".csv", ".xlsx", ".xls", ".json", ".py", ".ipynb", ".png",
+		".jpg", ".jpeg", ".svg", ".tex", ".pdf", ".docx", "result.json",
+		"notebook",
+	})
+	return !(hasHeading && (hasEvidence || hasArtifact))
+}
+
+func containsAny(s string, needles []string) bool {
+	for _, needle := range needles {
+		if strings.Contains(s, needle) {
+			return true
+		}
+	}
+	return false
 }
 
 // FactBodyTemplate 按 category 返回建议的 body Markdown 骨架（供 Agent 填入真实内容）。
 func FactBodyTemplate(category, factKey string) string {
-	if RequiresAttackChainBody(category, factKey) {
-		return attackChainFactBodyTemplate
+	switch inferFactCategory(category, factKey) {
+	case FactCategoryProblem:
+		return problemFactBodyTemplate
+	case FactCategoryData:
+		return dataFactBodyTemplate
+	case FactCategoryModel:
+		return modelFactBodyTemplate
+	case FactCategoryCode:
+		return codeFactBodyTemplate
+	case FactCategoryResult:
+		return resultFactBodyTemplate
+	case FactCategoryFigure:
+		return figureFactBodyTemplate
+	case FactCategoryPaper:
+		return paperFactBodyTemplate
+	case FactCategoryReview:
+		return reviewFactBodyTemplate
+	default:
+		return noteFactBodyTemplate
 	}
-	return envFactBodyTemplate
 }
 
-const attackChainFactBodyTemplate = `## 结论（可验证，一句话）
-<勿仅写「存在漏洞」；写明类型 + 位置 + 触发条件>
+func inferFactCategory(category, factKey string) string {
+	c := strings.ToLower(strings.TrimSpace(category))
+	if _, ok := structuredModelingCategories[c]; ok || c == FactCategoryNote {
+		return c
+	}
+	key := strings.ToLower(strings.TrimSpace(factKey))
+	for _, prefix := range structuredModelingPrefixes {
+		if strings.HasPrefix(key, prefix) {
+			return strings.TrimSuffix(prefix, "/")
+		}
+	}
+	return FactCategoryNote
+}
 
-## 目标与入口
-- 目标: <URL / IP:Port / 主机名>
-- 入口: <路径 / 接口 / 参数>
-- 前置条件: <匿名 / 角色 / Cookie / 其他依赖>
+const problemFactBodyTemplate = `## 题目与任务
+- 背景: <赛题背景或业务场景>
+- 问题列表: <P1 / P2 / P3 ...>
+- 交付要求: <论文、图表、预测结果、附件等>
 
-## 攻击链（逐步可复现）
-1. <侦察/发现>
-2. <利用/触发>
-3. <影响证明（读文件、RCE 回显、越权数据等）>
+## 约束与评分点
+- 显式约束: <时间、空间、单位、格式、边界条件>
+- 隐式约束: <可解释性、稳定性、可复现性>
+- 评分风险: <容易扣分或走偏之处>
 
-## Exploit / POC
-### 请求
-` + "```http\n<METHOD> <path> HTTP/1.1\nHost: ...\n...\n\n<body>\n```" + `
+## 已知数据与资料
+- 附件: <文件路径、表名、字段概览>
+- 外部资料: <允许使用的来源或引用>
 
-### 响应 / 现象
-<关键响应片段、状态码、差异点>
+## 待确认问题
+- <需要用户或后续代理确认的问题>`
 
-### 命令 / 脚本（如有）
-` + "```bash\n<command>\n```" + `
+const dataFactBodyTemplate = `## 数据概览
+- 文件/表: <路径、sheet、行列规模>
+- 字段与单位: <字段解释、单位、取值范围>
+- 样本粒度: <时间、空间、对象、观测频率>
 
-## 关键证据
-- <工具输出摘要 / 截图路径 / 会话或消息 ID>
+## 数据质量审计
+- 缺失: <字段、比例、处理建议>
+- 异常: <异常规则、影响范围>
+- 重复/泄露: <重复记录、未来信息、目标泄露风险>
 
-## 关联
-- related_vulnerability_id: <可选，对应 record_vulnerability 的 id>
-- 依赖事实: <fact_key，如 auth/session_cookie>
+## 可建模性结论
+- 可直接使用: <字段或子集>
+- 需要清洗/派生: <步骤与责任人>
+- 不建议使用: <原因>
 
-## 备注与不确定性
-<待验证假设、环境差异、绕过尝试记录>`
+## 证据
+- 文件路径/脚本/输出: <profile.json、图表路径、审计代码>`
 
-const envFactBodyTemplate = `## 摘要
-<该事实的核心认知>
+const modelFactBodyTemplate = `## 模型规格
+- 目标: <优化、预测、分类、评价、仿真等>
+- 变量: <决策变量、状态变量、随机变量>
+- 参数: <来源、估计方法、默认值>
+- 假设: <编号列出，说明合理性与局限>
+
+## 数学表达
+- 目标函数/评价指标: <公式或文字>
+- 约束条件: <公式或文字>
+- 求解策略: <解析、数值优化、仿真、机器学习等>
+
+## 备选模型与取舍
+- 候选模型: <模型 A/B/C>
+- 选择理由: <准确性、解释性、时间成本>
+- 放弃理由: <数据不足、复杂度、不可验证>
+
+## 验证方案
+- 基线: <简单模型或规则>
+- 敏感性/稳健性: <扰动参数、交叉验证、Bootstrap 等>
+- 通过标准: <误差、排名稳定性、可行性>`
+
+const codeFactBodyTemplate = `## 实现入口
+- 脚本/Notebook: <路径>
+- 命令: <运行命令>
+- 输入: <数据文件、配置文件>
+- 输出: <result.json、图表、日志>
+
+## 实现说明
+- 方法: <调用的方法卡或算法>
+- 关键参数: <参数名、值、来源>
+- 随机性控制: <seed、版本、环境>
+
+## 运行状态
+- 是否可复现: <是/否>
+- 已知问题: <失败、性能、边界情况>
+- 下一步: <需要建模手/论文手确认的点>`
+
+const resultFactBodyTemplate = `## 结果摘要
+- 对应问题: <P1 / P2 / P3>
+- 主要结论: <数值、排名、预测、策略>
+- 输出文件: <result.json、表格、日志路径>
+
+## 指标与误差
+- 评价指标: <MAE、RMSE、准确率、目标函数值等>
+- 基线对照: <基线结果与差异>
+- 不确定性: <置信区间、波动范围>
+
+## 可解释性与限制
+- 解释: <为什么得到该结果>
+- 限制: <数据、假设、模型适用边界>
+- 论文引用位置: <章节或图表编号>`
+
+const figureFactBodyTemplate = `## 图表信息
+- 图表编号/标题: <Figure/Table 编号>
+- 文件路径: <png/pdf/svg/csv>
+- 对应问题: <P1 / P2 / P3>
+
+## 数据来源
+- 输入数据: <数据文件或 result.json 字段>
+- 生成脚本: <脚本/Notebook 路径>
+- 关键参数: <绘图参数、筛选条件>
+
+## 论文使用
+- 结论句: <图表支持的结论>
+- 需要检查: <单位、图例、坐标、中文字体、清晰度>`
+
+const paperFactBodyTemplate = `## 论文章节
+- 章节: <摘要、问题重述、模型建立、求解、验证等>
+- LaTeX 文件: <paper.tex 或章节 tex 路径>
+- 来源卡片: <problem/data/model/result/figure fact_key>
+
+## 内容要点
+- 必写结论: <由已验证结果支撑>
+- 公式/图表: <编号、路径、引用 key>
+- 引用: <bib key 或来源>
+
+## 格式状态
+- 官方 Word 模板对齐: <是/否/待处理>
+- PDF 编译: <通过/失败/未运行>
+- DOCX 导出: <通过/失败/未运行>`
+
+const reviewFactBodyTemplate = `## 评审对象
+- 范围: <题目、数据、模型、代码、结果、论文>
+- 输入: <相关 fact_key、文件路径>
+- 评审人/代理: <角色>
+
+## 发现的问题
+- 阻断问题: <必须返工的问题>
+- 一般问题: <建议修订的问题>
+- 已确认无问题: <检查过的项目>
+
+## 处理决议
+- 责任人: <建模/编程/论文>
+- 修订动作: <具体修改>
+- checkpoint: <允许进入下一阶段/需要返工>`
+
+const noteFactBodyTemplate = `## 摘要
+<该备注的核心认知>
 
 ## 细节
-<端口/版本/路径/凭据特征/业务规则等>
+<补充说明、上下文、讨论记录>
 
-## 来源与证据
-<命令输出、响应片段、发现时间>
-
-## 关联
+## 来源与关联
+- 来源: <对话、文件、工具输出>
 - 相关 fact_key: <可选>`
 
-// FactRecordingGuidanceBlock 写入系统提示：要求事实沉淀攻击链上下文而非仅结论。
+// FactRecordingGuidanceBlock 写入系统提示：要求事实沉淀建模卡片上下文而非仅结论。
 func FactRecordingGuidanceBlock() string {
-	return `### 事实写入规范（审计复现 / 知识沉淀）
+	return `### 黑板卡片写入规范（数学建模 / 竞赛协作）
 
-- **summary**：索引用一行，须含「什么 + 在哪 + 如何触发/验证」要点，禁止只写结论（如仅写「存在 SQLi」）。
-- **body**：完整可复现上下文，写入 ` + "`upsert_project_fact`" + ` 的 body 字段；索引不含 body，后续会话须靠 ` + "`get_project_fact`" + ` 取回。
+- **summary**：索引用一行，须含「什么 + 属于哪个问题/文件/模型 + 如何验证或使用」要点，禁止只写结论。
+- **body**：结构化建模卡片，写入 ` + "`upsert_project_fact`" + ` 的 body 字段；索引不含 body，后续会话须靠 ` + "`get_project_fact`" + ` 取回。
 - **category / fact_key 建议**：
-  - 环境认知：` + "`target/`" + `、` + "`auth/`" + `、` + "`infra/`" + `、` + "`business/`" + `（body 用环境模板即可）
-  - 发现与利用：` + "`finding/`" + `、` + "`chain/`" + `、` + "`exploit/`" + `、` + "`poc/`" + `（**必须**用攻击链模板填满 body：入口、逐步攻击链、原始请求/响应或命令、证据、关联漏洞 ID）
-- **与漏洞记录分工**：` + "`record_vulnerability`" + ` 记可交付 findings；事实记**复现所需的全部上下文**（含失败尝试、绕过、依赖会话），二者可各记一次。
-- 更新同一发现时保持相同 ` + "`fact_key`" + ` 覆盖写入，勿散落多个 key 导致上下文丢失。`
+  - ` + "`problem/`" + `：题意、任务拆解、约束、交付要求。
+  - ` + "`data/`" + `：附件、字段、单位、缺失异常、清洗建议、数据泄露风险。
+  - ` + "`model/`" + `：假设、变量、参数、目标函数、约束、候选模型和验证方案。
+  - ` + "`code/`" + `：脚本、Notebook、命令、输入输出、随机种子、运行环境。
+  - ` + "`result/`" + ` / ` + "`figure/`" + `：结果 JSON、指标、图表路径、基线对照、敏感性结论。
+  - ` + "`paper/`" + `：LaTeX 章节、公式图表引用、官方模板对齐、PDF/DOCX 导出状态。
+  - ` + "`review/`" + `：交叉评审、阻断问题、返工决议、checkpoint。
+- 更新同一认知时保持相同 ` + "`fact_key`" + ` 覆盖写入，勿散落多个 key 导致上下文丢失。`
 }
 
-// SparseBodyWarning 攻击链类事实 body 不足时的工具返回提示（不阻断保存）。
+// SparseBodyWarning 结构化建模事实 body 不足时的工具返回提示（不阻断保存）。
 func SparseBodyWarning(category, factKey string) string {
 	if !IsSparseFactBody(category, factKey, "") {
 		return ""
 	}
 	return fmt.Sprintf(
-		"\n\n⚠ 提示：category=%q / fact_key=%q 属于攻击链类事实，但 body 为空或过简。请补充完整攻击链与 POC（参考模板），便于后续审计复现。\n建议 body 骨架：\n%s",
+		"\n\n提示：category=%q / fact_key=%q 属于结构化建模卡片，但 body 为空或过简。请补充题意、数据、模型、代码、结果、论文或评审所需的证据与产物路径。\n建议 body 骨架：\n%s",
 		category, factKey, FactBodyTemplate(category, factKey),
 	)
 }

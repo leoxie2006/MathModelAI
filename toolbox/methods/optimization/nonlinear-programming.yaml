@@ -1,0 +1,29 @@
+id: nonlinear-programming
+name: 非线性规划
+category: optimization
+applies_when: 目标函数或约束存在非线性关系，适合连续优化、参数拟合、能耗/收益曲线优化。
+inputs:
+  - 连续决策变量
+  - 非线性目标函数
+  - 非线性约束或边界
+  - 初值与求解器配置
+outputs:
+  - 局部最优解
+  - 目标函数值
+  - 收敛状态
+  - 约束残差
+assumptions:
+  - 函数可计算且在可行域内稳定
+  - 初值选择具有业务合理性
+  - 接受局部最优或有多初值验证
+validation:
+  - 多初值重复求解
+  - 检查约束残差
+  - 与网格搜索或简化模型对照
+  - 对参数和初值做扰动
+pitfalls:
+  - 未说明局部最优风险
+  - 初值不合理导致求解失败
+  - 约束尺度差异过大
+  - 把不可微函数交给不合适求解器
+future_cli: mathmodel-toolkit nlp --input data.xlsx --config config.yaml

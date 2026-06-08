@@ -1,0 +1,29 @@
+id: monte-carlo
+name: 蒙特卡洛模拟
+category: simulation
+applies_when: 系统含随机变量或解析计算困难，需要通过重复随机采样估计概率、期望、风险或不确定性。
+inputs:
+  - 随机变量分布
+  - 仿真模型
+  - 抽样次数
+  - 随机种子
+outputs:
+  - 估计均值或概率
+  - 置信区间
+  - 分布图
+  - 收敛曲线
+assumptions:
+  - 输入分布有依据
+  - 样本独立或相关结构已建模
+  - 抽样次数足够支撑精度
+validation:
+  - 固定 seed 复现
+  - 抽样次数收敛检查
+  - 与解析小样例对照
+  - 输入分布敏感性分析
+pitfalls:
+  - 分布凭空设定
+  - 抽样次数不足
+  - 不报置信区间
+  - 随机种子缺失导致不可复现
+future_cli: mathmodel-toolkit monte-carlo --input config.yaml --output result.json

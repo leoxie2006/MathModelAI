@@ -2,7 +2,6 @@ package config
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -24,7 +23,6 @@ type Config struct {
 	Hitl        HitlConfig            `yaml:"hitl,omitempty" json:"hitl,omitempty"`
 	Security    SecurityConfig        `yaml:"security"`
 	Database    DatabaseConfig        `yaml:"database"`
-	Auth        AuthConfig            `yaml:"auth"`
 	Audit       AuditConfig           `yaml:"audit,omitempty" json:"audit,omitempty"`
 	ExternalMCP ExternalMCPConfig     `yaml:"external_mcp,omitempty"`
 	Knowledge   KnowledgeConfig       `yaml:"knowledge,omitempty"`
@@ -65,7 +63,7 @@ func (c ProjectConfig) FactSummaryMaxRunesEffective() int {
 type MultiAgentConfig struct {
 	Enabled               bool   `yaml:"enabled" json:"enabled"`
 	RobotDefaultAgentMode string `yaml:"robot_default_agent_mode,omitempty" json:"robot_default_agent_mode,omitempty"` // eino_single | deep | plan_execute | supervisor
-	BatchUseMultiAgent     bool   `yaml:"batch_use_multi_agent" json:"batch_use_multi_agent"` // 为 true 时批量任务队列中每子任务走 Eino 多代理
+	BatchUseMultiAgent    bool   `yaml:"batch_use_multi_agent" json:"batch_use_multi_agent"`                           // 为 true 时批量任务队列中每子任务走 Eino 多代理
 	// Orchestration 已弃用：保留仅兼容旧版 config.yaml；编排由聊天/WebShell 请求体 orchestration 决定，未传时按 deep。
 	Orchestration string `yaml:"orchestration,omitempty" json:"orchestration,omitempty"`
 	MaxIteration  int    `yaml:"max_iteration" json:"max_iteration"` // 主代理 / 执行器最大推理轮次（Deep、Supervisor、plan_execute 的 Executor）
@@ -109,11 +107,11 @@ type MultiAgentEinoCallbacksConfig struct {
 
 // MultiAgentEinoCallbacksOtelConfig OpenTelemetry for Eino callback spans (W3C trace in collector / stdout).
 type MultiAgentEinoCallbacksOtelConfig struct {
-	Enabled     bool    `yaml:"enabled" json:"enabled"`
-	ServiceName string  `yaml:"service_name,omitempty" json:"service_name,omitempty"`
-	Exporter    string  `yaml:"exporter,omitempty" json:"exporter,omitempty"`         // none | stdout | otlphttp
-	OTLPEndpoint string `yaml:"otlp_endpoint,omitempty" json:"otlp_endpoint,omitempty"` // host:port, e.g. localhost:4318 (path /v1/traces)
-	SampleRatio float64 `yaml:"sample_ratio,omitempty" json:"sample_ratio,omitempty"`   // 0–1, default 1.0
+	Enabled      bool    `yaml:"enabled" json:"enabled"`
+	ServiceName  string  `yaml:"service_name,omitempty" json:"service_name,omitempty"`
+	Exporter     string  `yaml:"exporter,omitempty" json:"exporter,omitempty"`           // none | stdout | otlphttp
+	OTLPEndpoint string  `yaml:"otlp_endpoint,omitempty" json:"otlp_endpoint,omitempty"` // host:port, e.g. localhost:4318 (path /v1/traces)
+	SampleRatio  float64 `yaml:"sample_ratio,omitempty" json:"sample_ratio,omitempty"`   // 0–1, default 1.0
 }
 
 // EinoCallbacksModeEffective returns off | log_only | sse | full.
@@ -224,12 +222,12 @@ type MultiAgentEinoMiddlewareConfig struct {
 	// PlantaskRelDir relative to skills_dir for per-conversation task boards (default .eino/plantask).
 	PlantaskRelDir string `yaml:"plantask_rel_dir,omitempty" json:"plantask_rel_dir,omitempty"`
 	// Reduction truncates/offloads large tool outputs (requires eino local backend for Write).
-	ReductionEnable       bool     `yaml:"reduction_enable,omitempty" json:"reduction_enable,omitempty"`
-	ReductionRootDir      string   `yaml:"reduction_root_dir,omitempty" json:"reduction_root_dir,omitempty"` // default: os temp + conversation id
-	ReductionMaxLengthForTrunc int `yaml:"reduction_max_length_for_trunc,omitempty" json:"reduction_max_length_for_trunc,omitempty"` // default 12000
-	ReductionMaxTokensForClear int `yaml:"reduction_max_tokens_for_clear,omitempty" json:"reduction_max_tokens_for_clear,omitempty"` // default 50000
-	ReductionClearExclude []string `yaml:"reduction_clear_exclude,omitempty" json:"reduction_clear_exclude,omitempty"`
-	ReductionSubAgents    bool     `yaml:"reduction_sub_agents,omitempty" json:"reduction_sub_agents,omitempty"` // also attach to sub-agents
+	ReductionEnable            bool     `yaml:"reduction_enable,omitempty" json:"reduction_enable,omitempty"`
+	ReductionRootDir           string   `yaml:"reduction_root_dir,omitempty" json:"reduction_root_dir,omitempty"`                         // default: os temp + conversation id
+	ReductionMaxLengthForTrunc int      `yaml:"reduction_max_length_for_trunc,omitempty" json:"reduction_max_length_for_trunc,omitempty"` // default 12000
+	ReductionMaxTokensForClear int      `yaml:"reduction_max_tokens_for_clear,omitempty" json:"reduction_max_tokens_for_clear,omitempty"` // default 50000
+	ReductionClearExclude      []string `yaml:"reduction_clear_exclude,omitempty" json:"reduction_clear_exclude,omitempty"`
+	ReductionSubAgents         bool     `yaml:"reduction_sub_agents,omitempty" json:"reduction_sub_agents,omitempty"` // also attach to sub-agents
 	// SummarizationTriggerRatio controls summarization trigger threshold as max_total_tokens * ratio (default 0.8).
 	SummarizationTriggerRatio float64 `yaml:"summarization_trigger_ratio,omitempty" json:"summarization_trigger_ratio,omitempty"`
 	// SummarizationEmitInternalEvents controls middleware internal event emission (default true).
@@ -373,13 +371,13 @@ type MultiAgentSubConfig struct {
 
 // MultiAgentPublic 返回给前端的精简信息（不含子代理指令全文）。
 type MultiAgentPublic struct {
-	Enabled               bool   `json:"enabled"`
-	RobotDefaultAgentMode string `json:"robot_default_agent_mode,omitempty"`
-	BatchUseMultiAgent    bool   `json:"batch_use_multi_agent"`
-	SubAgentCount                int    `json:"sub_agent_count"`
-	Orchestration                string `json:"orchestration,omitempty"`
-	PlanExecuteLoopMaxIterations int    `json:"plan_execute_loop_max_iterations"`
-	ToolSearchAlwaysVisibleTools []string `json:"tool_search_always_visible_tools,omitempty"`
+	Enabled                               bool     `json:"enabled"`
+	RobotDefaultAgentMode                 string   `json:"robot_default_agent_mode,omitempty"`
+	BatchUseMultiAgent                    bool     `json:"batch_use_multi_agent"`
+	SubAgentCount                         int      `json:"sub_agent_count"`
+	Orchestration                         string   `json:"orchestration,omitempty"`
+	PlanExecuteLoopMaxIterations          int      `json:"plan_execute_loop_max_iterations"`
+	ToolSearchAlwaysVisibleTools          []string `json:"tool_search_always_visible_tools,omitempty"`
 	ToolSearchAlwaysVisibleEffectiveTools []string `json:"tool_search_always_visible_effective_tools,omitempty"`
 }
 
@@ -420,14 +418,13 @@ func NormalizeMultiAgentOrchestration(s string) string {
 
 // MultiAgentAPIUpdate 设置页/API 仅更新多代理标量字段；写入 YAML 时不覆盖 sub_agents 等块。
 type MultiAgentAPIUpdate struct {
-	Enabled               bool   `json:"enabled"`
-	RobotDefaultAgentMode string `json:"robot_default_agent_mode,omitempty"`
-	BatchUseMultiAgent    bool   `json:"batch_use_multi_agent"`
-	PlanExecuteLoopMaxIterations *int `json:"plan_execute_loop_max_iterations,omitempty"`
+	Enabled                      bool   `json:"enabled"`
+	RobotDefaultAgentMode        string `json:"robot_default_agent_mode,omitempty"`
+	BatchUseMultiAgent           bool   `json:"batch_use_multi_agent"`
+	PlanExecuteLoopMaxIterations *int   `json:"plan_execute_loop_max_iterations,omitempty"`
 	// 指针区分「JSON 未传该字段」与「传空数组要清空」；省略时不应覆盖 YAML 中的常驻工具白名单。
 	ToolSearchAlwaysVisibleTools *[]string `json:"tool_search_always_visible_tools,omitempty"`
 }
-
 
 type ServerConfig struct {
 	Host string `yaml:"host" json:"host"`
@@ -506,7 +503,6 @@ func (c OpenAIReasoningConfig) AllowClientReasoningEffective() bool {
 	return *c.AllowClientReasoning
 }
 
-
 type SecurityConfig struct {
 	Tools               []ToolConfig `yaml:"tools,omitempty"`                 // 向后兼容：支持在主配置文件中定义工具
 	ToolsDir            string       `yaml:"tools_dir,omitempty"`             // 工具配置文件目录（新方式）
@@ -534,20 +530,12 @@ type HitlConfig struct {
 	ToolWhitelist []string `yaml:"tool_whitelist,omitempty" json:"tool_whitelist,omitempty"`
 }
 
-type AuthConfig struct {
-	Password                    string `yaml:"password" json:"password"`
-	SessionDurationHours        int    `yaml:"session_duration_hours" json:"session_duration_hours"`
-	GeneratedPassword           string `yaml:"-" json:"-"`
-	GeneratedPasswordPersisted  bool   `yaml:"-" json:"-"`
-	GeneratedPasswordPersistErr string `yaml:"-" json:"-"`
-}
-
 // AuditConfig platform operation audit log settings (not chat/tool execution bodies).
 type AuditConfig struct {
 	// Enabled nil or true enables persistence; explicit false disables.
-	Enabled             *bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
-	RetentionDays  int `yaml:"retention_days,omitempty" json:"retention_days,omitempty"`
-	MaxDetailBytes int `yaml:"max_detail_bytes,omitempty" json:"max_detail_bytes,omitempty"`
+	Enabled        *bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	RetentionDays  int   `yaml:"retention_days,omitempty" json:"retention_days,omitempty"`
+	MaxDetailBytes int   `yaml:"max_detail_bytes,omitempty" json:"max_detail_bytes,omitempty"`
 	// AuthFailureCooldownSeconds: per-IP cooldown for auth login/change_password failure audit rows; -1 disables; 0 uses default 60.
 	AuthFailureCooldownSeconds int `yaml:"auth_failure_cooldown_seconds,omitempty" json:"auth_failure_cooldown_seconds,omitempty"`
 }
@@ -676,27 +664,8 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("解析配置文件失败: %w", err)
 	}
 
-	if cfg.Auth.SessionDurationHours <= 0 {
-		cfg.Auth.SessionDurationHours = 12
-	}
 	if cfg.Audit.MaxDetailBytes <= 0 {
 		cfg.Audit.MaxDetailBytes = 8192
-	}
-	if strings.TrimSpace(cfg.Auth.Password) == "" {
-		password, err := generateStrongPassword(24)
-		if err != nil {
-			return nil, fmt.Errorf("生成默认密码失败: %w", err)
-		}
-
-		cfg.Auth.Password = password
-		cfg.Auth.GeneratedPassword = password
-
-		if err := PersistAuthPassword(path, password); err != nil {
-			cfg.Auth.GeneratedPasswordPersisted = false
-			cfg.Auth.GeneratedPasswordPersistErr = err.Error()
-		} else {
-			cfg.Auth.GeneratedPasswordPersisted = true
-		}
 	}
 
 	// 如果配置了工具目录，从目录加载工具配置
@@ -772,109 +741,6 @@ func Load(path string) (*Config, error) {
 	}
 
 	return &cfg, nil
-}
-
-func generateStrongPassword(length int) (string, error) {
-	if length <= 0 {
-		length = 24
-	}
-
-	bytesLen := length
-	randomBytes := make([]byte, bytesLen)
-	if _, err := rand.Read(randomBytes); err != nil {
-		return "", err
-	}
-
-	password := base64.RawURLEncoding.EncodeToString(randomBytes)
-	if len(password) > length {
-		password = password[:length]
-	}
-	return password, nil
-}
-
-func PersistAuthPassword(path, password string) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	lines := strings.Split(string(data), "\n")
-	inAuthBlock := false
-	authIndent := -1
-
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if !inAuthBlock {
-			if strings.HasPrefix(trimmed, "auth:") {
-				inAuthBlock = true
-				authIndent = len(line) - len(strings.TrimLeft(line, " "))
-			}
-			continue
-		}
-
-		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
-			continue
-		}
-
-		leadingSpaces := len(line) - len(strings.TrimLeft(line, " "))
-		if leadingSpaces <= authIndent {
-			// 离开 auth 块
-			inAuthBlock = false
-			authIndent = -1
-			// 继续寻找其它 auth 块（理论上没有）
-			if strings.HasPrefix(trimmed, "auth:") {
-				inAuthBlock = true
-				authIndent = leadingSpaces
-			}
-			continue
-		}
-
-		if strings.HasPrefix(strings.TrimSpace(line), "password:") {
-			prefix := line[:len(line)-len(strings.TrimLeft(line, " "))]
-			comment := ""
-			if idx := strings.Index(line, "#"); idx >= 0 {
-				comment = strings.TrimRight(line[idx:], " ")
-			}
-
-			newLine := fmt.Sprintf("%spassword: %s", prefix, password)
-			if comment != "" {
-				if !strings.HasPrefix(comment, " ") {
-					newLine += " "
-				}
-				newLine += comment
-			}
-			lines[i] = newLine
-			break
-		}
-	}
-
-	return os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0644)
-}
-
-func PrintGeneratedPasswordWarning(password string, persisted bool, persistErr string) {
-	if strings.TrimSpace(password) == "" {
-		return
-	}
-
-	if persisted {
-		fmt.Println("[MathModelAI] ✅ 已为您自动生成并写入 Web 登录密码。")
-	} else {
-		if persistErr != "" {
-			fmt.Printf("[MathModelAI] ⚠️ 无法自动写入配置文件中的密码: %s\n", persistErr)
-		} else {
-			fmt.Println("[MathModelAI] ⚠️ 无法自动写入配置文件中的密码。")
-		}
-		fmt.Println("请手动将以下随机密码写入 config.yaml 的 auth.password：")
-	}
-
-	fmt.Println("----------------------------------------------------------------")
-	fmt.Println("MathModelAI Auto-Generated Web Password")
-	fmt.Printf("Password: %s\n", password)
-	fmt.Println("WARNING: Anyone with this password can fully control MathModelAI.")
-	fmt.Println("Please store it securely and change it in config.yaml as soon as possible.")
-	fmt.Println("警告：持有此密码的人将拥有对 MathModelAI 的完全控制权限。")
-	fmt.Println("请妥善保管，并尽快在 config.yaml 中修改 auth.password！")
-	fmt.Println("----------------------------------------------------------------")
 }
 
 // generateRandomToken 生成用于 MCP 鉴权的随机字符串（64 位十六进制）
@@ -1181,9 +1047,6 @@ func Default() *Config {
 			Path:            "data/conversations.db",
 			KnowledgeDBPath: "data/knowledge.db", // 默认知识库数据库路径
 		},
-		Auth: AuthConfig{
-			SessionDurationHours: 12,
-		},
 		Audit: func() AuditConfig {
 			on := true
 			return AuditConfig{
@@ -1221,7 +1084,6 @@ func Default() *Config {
 		},
 	}
 }
-
 
 // KnowledgeConfig 知识库配置
 type KnowledgeConfig struct {

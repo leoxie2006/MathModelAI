@@ -220,7 +220,7 @@ func (h *ConfigHandler) GetConfig(c *gin.Context) {
 	}
 	multiPub := config.MultiAgentPublic{
 		Enabled:                      h.config.MultiAgent.Enabled,
-		RobotDefaultAgentMode: config.NormalizeRobotAgentMode(h.config.MultiAgent),
+		RobotDefaultAgentMode:        config.NormalizeRobotAgentMode(h.config.MultiAgent),
 		BatchUseMultiAgent:           h.config.MultiAgent.BatchUseMultiAgent,
 		SubAgentCount:                subAgentCount,
 		Orchestration:                config.NormalizeMultiAgentOrchestration(h.config.MultiAgent.Orchestration),
@@ -535,12 +535,12 @@ func (h *ConfigHandler) GetTools(c *gin.Context) {
 
 // UpdateConfigRequest 更新配置请求
 type UpdateConfigRequest struct {
-	OpenAI     *config.OpenAIConfig         `json:"openai,omitempty"`
-	MCP        *config.MCPConfig            `json:"mcp,omitempty"`
-	Tools      []ToolEnableStatus           `json:"tools,omitempty"`
-	Agent      *AgentConfigUpdate           `json:"agent,omitempty"`
-	Knowledge  *config.KnowledgeConfig      `json:"knowledge,omitempty"`
-	MultiAgent *config.MultiAgentAPIUpdate  `json:"multi_agent,omitempty"`
+	OpenAI     *config.OpenAIConfig        `json:"openai,omitempty"`
+	MCP        *config.MCPConfig           `json:"mcp,omitempty"`
+	Tools      []ToolEnableStatus          `json:"tools,omitempty"`
+	Agent      *AgentConfigUpdate          `json:"agent,omitempty"`
+	Knowledge  *config.KnowledgeConfig     `json:"knowledge,omitempty"`
+	MultiAgent *config.MultiAgentAPIUpdate `json:"multi_agent,omitempty"`
 }
 
 // AgentConfigUpdate 用于 PATCH /api/config 的 agent 段：仅 JSON 中出现的字段（指针非 nil）覆盖内存配置。
@@ -902,7 +902,6 @@ func (h *ConfigHandler) TestOpenAI(c *gin.Context) {
 		"latency_ms": latency.Milliseconds(),
 	})
 }
-
 
 // ApplyConfig 应用配置（重新加载并重启相关服务）
 func (h *ConfigHandler) ApplyConfig(c *gin.Context) {

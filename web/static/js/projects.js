@@ -23,91 +23,222 @@ function tpFmt(key, fallback, opts) {
 }
 
 /** 与后端 internal/project/fact_template.go 对齐 */
-const FACT_ATTACK_CHAIN_BODY_TEMPLATE = `## 结论（可验证，一句话）
-<勿仅写「存在漏洞」；写明类型 + 位置 + 触发条件>
+const FACT_MODELING_BODY_TEMPLATES = {
+    problem: `## 题目与任务
+- 背景: <赛题背景或业务场景>
+- 问题列表: <P1 / P2 / P3 ...>
+- 交付要求: <论文、图表、预测结果、附件等>
 
-## 目标与入口
-- 目标: <URL / IP:Port / 主机名>
-- 入口: <路径 / 接口 / 参数>
-- 前置条件: <匿名 / 角色 / Cookie / 其他依赖>
+## 约束与评分点
+- 显式约束: <时间、单位、格式、边界条件>
+- 隐式约束: <可解释性、稳定性、可复现性>
+- 评分风险: <容易扣分或走偏之处>
 
-## 攻击链（逐步可复现）
-1. <侦察/发现>
-2. <利用/触发>
-3. <影响证明（读文件、RCE 回显、越权数据等）>
+## 待确认问题
+- <需要用户或后续代理确认的问题>`,
+    data: `## 数据概览
+- 文件/表: <路径、sheet、行列规模>
+- 字段与单位: <字段解释、单位、取值范围>
+- 样本粒度: <时间、空间、对象、观测频率>
 
-## Exploit / POC
-### 请求
-\`\`\`http
-<METHOD> <path> HTTP/1.1
-Host: ...
-...
+## 数据质量审计
+- 缺失: <字段、比例、处理建议>
+- 异常: <异常规则、影响范围>
+- 重复/泄露: <重复记录、未来信息、目标泄露风险>
 
-<body>
-\`\`\`
+## 证据
+- 文件路径/脚本/输出: <profile.json、图表路径、审计代码>`,
+    model: `## 模型规格
+- 目标: <优化、预测、分类、评价、仿真等>
+- 变量: <决策变量、状态变量、随机变量>
+- 参数: <来源、估计方法、默认值>
+- 假设: <编号列出，说明合理性与局限>
 
-### 响应 / 现象
-<关键响应片段、状态码、差异点>
+## 数学表达
+- 目标函数/评价指标: <公式或文字>
+- 约束条件: <公式或文字>
+- 求解策略: <解析、数值优化、仿真、机器学习等>
 
-### 命令 / 脚本（如有）
-\`\`\`bash
-<command>
-\`\`\`
+## 验证方案
+- 基线: <简单模型或规则>
+- 敏感性/稳健性: <扰动参数、交叉验证、Bootstrap 等>`,
+    code: `## 实现入口
+- 脚本/Notebook: <路径>
+- 命令: <运行命令>
+- 输入: <数据文件、配置文件>
+- 输出: <result.json、图表、日志>
 
-## 关键证据
-- <工具输出摘要 / 截图路径 / 会话或消息 ID>
+## 运行状态
+- 是否可复现: <是/否>
+- 已知问题: <失败、性能、边界情况>
+- 下一步: <需要建模手/论文手确认的点>`,
+    result: `## 结果摘要
+- 对应问题: <P1 / P2 / P3>
+- 主要结论: <数值、排名、预测、策略>
+- 输出文件: <result.json、表格、日志路径>
 
-## 关联
-- related_vulnerability_id: <可选>
-- 依赖事实: <fact_key，如 auth/session_cookie>
+## 指标与误差
+- 评价指标: <MAE、RMSE、准确率、目标函数值等>
+- 基线对照: <基线结果与差异>
+- 不确定性: <置信区间、波动范围>`,
+    figure: `## 图表信息
+- 图表编号/标题: <Figure/Table 编号>
+- 文件路径: <png/pdf/svg/csv>
+- 对应问题: <P1 / P2 / P3>
 
-## 备注与不确定性
-<待验证假设、环境差异、绕过尝试记录>`;
+## 数据来源
+- 输入数据: <数据文件或 result.json 字段>
+- 生成脚本: <脚本/Notebook 路径>
+- 论文结论句: <图表支持的结论>`,
+    paper: `## 论文章节
+- 章节: <摘要、问题重述、模型建立、求解、验证等>
+- LaTeX 文件: <paper.tex 或章节 tex 路径>
+- 来源卡片: <problem/data/model/result/figure fact_key>
 
-const FACT_ENV_BODY_TEMPLATE = `## 摘要
-<该事实的核心认知>
+## 格式状态
+- 官方 Word 模板对齐: <是/否/待处理>
+- PDF 编译: <通过/失败/未运行>
+- DOCX 导出: <通过/失败/未运行>`,
+    review: `## 评审对象
+- 范围: <题目、数据、模型、代码、结果、论文>
+- 输入: <相关 fact_key、文件路径>
+
+## 发现的问题
+- 阻断问题: <必须返工的问题>
+- 一般问题: <建议修订的问题>
+- 已确认无问题: <检查过的项目>
+
+## 处理决议
+- 责任人: <建模/编程/论文>
+- checkpoint: <允许进入下一阶段/需要返工>`,
+    note: `## 摘要
+<该备注的核心认知>
 
 ## 细节
-<端口/版本/路径/凭据特征/业务规则等>
+<补充说明、上下文、讨论记录>
 
-## 来源与证据
-<命令输出、响应片段、发现时间>
+## 来源与关联
+- 来源: <对话、文件、工具输出>
+- 相关 fact_key: <可选>`,
+};
 
-## 关联
-- 相关 fact_key: <可选>`;
+const FACT_STRUCTURED_PREFIXES = ['problem/', 'data/', 'model/', 'code/', 'result/', 'figure/', 'paper/', 'review/'];
+const FACT_STRUCTURED_CATEGORIES = new Set(['problem', 'data', 'model', 'code', 'result', 'figure', 'paper', 'review']);
 
-const FACT_ATTACK_CHAIN_PREFIXES = ['finding/', 'chain/', 'exploit/', 'poc/'];
-const FACT_ATTACK_CHAIN_CATEGORIES = new Set(['finding', 'chain', 'exploit', 'poc', 'vuln']);
+const PROJECT_TEAM_LANES = [
+    {
+        id: 'modeling',
+        title: '建模手',
+        agent: 'Modeling Lead',
+        categories: ['problem', 'data', 'model', 'review'],
+        handoff: '把题意、数据、变量、假设、约束和验证方案交给编程手与论文手。',
+    },
+    {
+        id: 'coding',
+        title: '编程手',
+        agent: 'Coding Lead',
+        categories: ['code', 'result', 'figure', 'review'],
+        handoff: '把实现入口、复现命令、图表和结构化结果同步给建模手与论文手。',
+    },
+    {
+        id: 'paper',
+        title: '论文手',
+        agent: 'Paper Lead',
+        categories: ['paper', 'figure', 'result', 'review'],
+        handoff: '把章节、公式、图表解释、引用和格式问题回查给建模手与编程手。',
+    },
+];
 
-function requiresAttackChainFact(category, factKey) {
+const PROJECT_CHECKPOINTS = [
+    {
+        id: 'problem',
+        title: '题目拆解确认',
+        owner: '建模手',
+        required: ['problem', 'data'],
+        evidence: '题意、问题列表、附件字段、单位、缺失/异常审计。',
+    },
+    {
+        id: 'model_route',
+        title: '模型路线确认',
+        owner: '建模手 + 编程手',
+        required: ['model', 'review'],
+        evidence: '变量、参数、目标函数、约束、候选方法、验证计划。',
+    },
+    {
+        id: 'core_result',
+        title: '核心结果确认',
+        owner: '编程手 + 建模手',
+        required: ['code', 'result', 'figure', 'review'],
+        evidence: '可复现命令、结果 JSON、图表卡、边界/基线/敏感性检查。',
+    },
+    {
+        id: 'draft',
+        title: '论文初稿确认',
+        owner: '论文手 + 建模手 + 编程手',
+        required: ['paper', 'result', 'figure', 'review'],
+        evidence: '章节卡、公式编号、图表解释、结果一致性、引用检查。',
+    },
+    {
+        id: 'final_export',
+        title: '最终导出确认',
+        owner: '父 agent',
+        required: ['paper', 'review', 'result'],
+        evidence: 'paper.pdf、paper.docx、compile_report.json、最终评审结论。',
+    },
+];
+
+function inferFactCategory(category, factKey) {
     const c = (category || '').trim().toLowerCase();
-    if (FACT_ATTACK_CHAIN_CATEGORIES.has(c)) return true;
+    if (FACT_STRUCTURED_CATEGORIES.has(c) || c === 'note') return c;
     const key = (factKey || '').trim().toLowerCase();
-    return FACT_ATTACK_CHAIN_PREFIXES.some((p) => key.startsWith(p));
+    const prefix = FACT_STRUCTURED_PREFIXES.find((p) => key.startsWith(p));
+    return prefix ? prefix.slice(0, -1) : 'note';
+}
+
+function requiresStructuredFact(category, factKey) {
+    const c = (category || '').trim().toLowerCase();
+    if (FACT_STRUCTURED_CATEGORIES.has(c)) return true;
+    const key = (factKey || '').trim().toLowerCase();
+    return FACT_STRUCTURED_PREFIXES.some((p) => key.startsWith(p));
 }
 
 function isSparseFactBody(category, factKey, body) {
-    if (!requiresAttackChainFact(category, factKey)) return false;
+    if (!requiresStructuredFact(category, factKey)) return false;
     const text = (body || '').trim();
     if (!text) return true;
     const lower = text.toLowerCase();
-    const hasSteps =
-        lower.includes('攻击链') ||
-        lower.includes('## 攻击') ||
-        lower.includes('## exploit') ||
-        lower.includes('## poc');
-    const hasHTTP =
-        lower.includes('```http') ||
-        lower.includes('```bash') ||
-        lower.includes('curl ') ||
-        lower.includes('get ') ||
-        lower.includes('post ');
-    const hasReq = lower.includes('请求') || lower.includes('响应') || lower.includes('payload');
-    return !(hasSteps || hasHTTP || hasReq);
+    const hasHeading = text.includes('## ') || text.includes('### ');
+    const hasEvidence =
+        text.includes('证据') ||
+        text.includes('来源') ||
+        text.includes('输入') ||
+        text.includes('输出') ||
+        text.includes('文件') ||
+        text.includes('路径') ||
+        text.includes('假设') ||
+        text.includes('变量') ||
+        text.includes('参数') ||
+        text.includes('验证') ||
+        text.includes('图表') ||
+        text.includes('结论') ||
+        text.includes('章节');
+    const hasArtifact =
+        lower.includes('```') ||
+        lower.includes('.csv') ||
+        lower.includes('.xlsx') ||
+        lower.includes('.json') ||
+        lower.includes('.py') ||
+        lower.includes('.ipynb') ||
+        lower.includes('.png') ||
+        lower.includes('.tex') ||
+        lower.includes('.pdf') ||
+        lower.includes('.docx') ||
+        lower.includes('result.json');
+    return !(hasHeading && (hasEvidence || hasArtifact));
 }
 
 function formatFactBodyBadge(f) {
-    if (!requiresAttackChainFact(f.category, f.fact_key)) {
+    if (!requiresStructuredFact(f.category, f.fact_key)) {
         const hasBody = !!(f.body || '').trim();
         return `<span class="projects-fact-badge projects-fact-badge--na" title="${escapeHtml(tp('projects.factBodyEnvTitle'))}">${hasBody ? escapeHtml(tp('projects.factBodyHasDetail')) : '—'}</span>`;
     }
@@ -123,7 +254,7 @@ function updateFactFormHints() {
     const body = document.getElementById('fact-modal-body')?.value || '';
     const hint = document.getElementById('fact-modal-body-hint');
     if (!hint) return;
-    if (requiresAttackChainFact(cat, key)) {
+    if (requiresStructuredFact(cat, key)) {
         const sparse = isSparseFactBody(cat, key, body);
         hint.textContent = sparse
             ? tp('projects.factHintAttackSparse')
@@ -138,7 +269,10 @@ function updateFactFormHints() {
 function insertFactBodyTemplate(kind) {
     const ta = document.getElementById('fact-modal-body');
     if (!ta) return;
-    const tpl = kind === 'env' ? FACT_ENV_BODY_TEMPLATE : FACT_ATTACK_CHAIN_BODY_TEMPLATE;
+    const cat = document.getElementById('fact-modal-category')?.value || '';
+    const key = document.getElementById('fact-modal-key')?.value || '';
+    const resolved = kind === 'note' ? 'note' : (kind || inferFactCategory(cat, key));
+    const tpl = FACT_MODELING_BODY_TEMPLATES[resolved] || FACT_MODELING_BODY_TEMPLATES.note;
     if (ta.value.trim() && !confirm(tp('projects.confirmOverwriteBodyTemplate'))) return;
     ta.value = tpl;
     updateFactFormHints();
@@ -282,16 +416,15 @@ function updateProjectsListCount() {
 
 /** 事实分类 → 徽章样式（与 fact_template.go 常量对齐） */
 const FACT_CATEGORY_BADGE = {
-    target: 'projects-category--target',
-    auth: 'projects-category--auth',
-    infra: 'projects-category--infra',
-    business: 'projects-category--business',
-    finding: 'projects-category--finding',
-    chain: 'projects-category--chain',
-    exploit: 'projects-category--exploit',
-    poc: 'projects-category--poc',
+    problem: 'projects-category--problem',
+    data: 'projects-category--data',
+    model: 'projects-category--model',
+    code: 'projects-category--code',
+    result: 'projects-category--result',
+    figure: 'projects-category--figure',
+    paper: 'projects-category--paper',
+    review: 'projects-category--review',
     note: 'projects-category--note',
-    vuln: 'projects-category--exploit',
 };
 
 function formatCategoryBadge(category) {
@@ -455,6 +588,191 @@ function updateProjectStats(stats) {
     }
 }
 
+async function fetchProjectFactsSnapshot() {
+    if (!currentProjectId) return [];
+    const qs = new URLSearchParams({ limit: '200', exclude_deprecated: 'true' });
+    const res = await apiFetch(`/api/projects/${currentProjectId}/facts?${qs}`);
+    if (!res.ok) throw new Error(tp('projects.loadFactFailed'));
+    return await res.json();
+}
+
+function normalizeFactCategory(f) {
+    return inferFactCategory(f.category, f.fact_key);
+}
+
+function groupProjectFactsByCategory(facts) {
+    const grouped = {};
+    for (const f of facts || []) {
+        const category = normalizeFactCategory(f);
+        if (!grouped[category]) grouped[category] = [];
+        grouped[category].push(f);
+    }
+    Object.keys(grouped).forEach((category) => {
+        grouped[category].sort((a, b) => String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || '')));
+    });
+    return grouped;
+}
+
+function computeCheckpointState(facts) {
+    const grouped = groupProjectFactsByCategory(facts);
+    const items = PROJECT_CHECKPOINTS.map((cp) => {
+        const missing = cp.required.filter((category) => !(grouped[category] || []).length);
+        const sparse = cp.required.filter((category) => (grouped[category] || []).some((f) => isSparseFactBody(f.category, f.fact_key, f.body)));
+        const tentative = cp.required.filter((category) => (grouped[category] || []).some((f) => f.confidence !== 'confirmed'));
+        const status = missing.length
+            ? ((missing.length === cp.required.length) ? 'pending' : 'in_progress')
+            : (sparse.length || tentative.length ? 'review' : 'confirmed');
+        return { ...cp, status, missing, sparse, tentative };
+    });
+    return {
+        items,
+        confirmedCount: items.filter((item) => item.status === 'confirmed').length,
+        reviewCount: (grouped.review || []).length,
+        grouped,
+    };
+}
+
+function renderWorkflowStatusPill(status) {
+    const labels = {
+        empty: '未开始',
+        in_progress: '进行中',
+        review: '待审核',
+        confirmed: '已确认',
+        blocked: '阻断',
+        pending: '待开始',
+    };
+    return `<span class="projects-workflow-pill projects-workflow-pill--${escapeHtml(status)}">${escapeHtml(labels[status] || status)}</span>`;
+}
+
+function laneStatusForFacts(facts) {
+    if (!facts.length) return 'empty';
+    if (facts.some((f) => isSparseFactBody(f.category, f.fact_key, f.body))) return 'review';
+    if (facts.some((f) => f.confidence !== 'confirmed')) return 'in_progress';
+    return 'confirmed';
+}
+
+function renderLatestFactLine(facts) {
+    if (!facts.length) return '<span class="projects-workflow-muted">暂无卡片</span>';
+    const f = facts[0];
+    const key = escapeHtml(f.fact_key || '');
+    const summary = escapeHtml(f.summary || '');
+    return `<button type="button" class="projects-workflow-fact-link" data-fact-key="${key}" onclick="viewProjectFactBody(this.dataset.factKey)"><code>${key}</code><span>${summary}</span></button>`;
+}
+
+function renderProjectWorkflow(facts) {
+    const grid = document.getElementById('project-workflow-grid');
+    const queue = document.getElementById('project-review-queue');
+    if (!grid || !queue) return;
+    const grouped = groupProjectFactsByCategory(facts);
+    grid.innerHTML = PROJECT_TEAM_LANES.map((lane) => {
+        const laneFacts = lane.categories.flatMap((category) => grouped[category] || []);
+        laneFacts.sort((a, b) => String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || '')));
+        const status = laneStatusForFacts(laneFacts);
+        const counts = lane.categories.map((category) => `${category}: ${(grouped[category] || []).length}`).join(' / ');
+        return `<section class="projects-workflow-card projects-workflow-card--${escapeHtml(lane.id)}">
+            <div class="projects-workflow-card-head">
+                <div>
+                    <h4>${escapeHtml(lane.title)}</h4>
+                    <p>${escapeHtml(lane.agent)}</p>
+                </div>
+                ${renderWorkflowStatusPill(status)}
+            </div>
+            <p class="projects-workflow-handoff">${escapeHtml(lane.handoff)}</p>
+            <div class="projects-workflow-meta">${escapeHtml(counts)}</div>
+            <div class="projects-workflow-latest">${renderLatestFactLine(laneFacts)}</div>
+        </section>`;
+    }).join('');
+
+    const reviewFacts = (grouped.review || []).filter((f) => f.confidence !== 'confirmed' || isSparseFactBody(f.category, f.fact_key, f.body));
+    if (!reviewFacts.length) {
+        queue.innerHTML = '<div class="projects-workflow-empty">暂无待处理审核卡；若结果或论文还没复核，建议主动新增 review 卡。</div>';
+        return;
+    }
+    queue.innerHTML = reviewFacts.map((f) => {
+        const key = escapeHtml(f.fact_key || '');
+        const status = isSparseFactBody(f.category, f.fact_key, f.body) ? 'review' : 'in_progress';
+        return `<div class="projects-review-item">
+            ${renderWorkflowStatusPill(status)}
+            <button type="button" class="projects-workflow-fact-link" data-fact-key="${key}" onclick="viewProjectFactBody(this.dataset.factKey)"><code>${key}</code><span>${escapeHtml(f.summary || '')}</span></button>
+        </div>`;
+    }).join('');
+}
+
+function renderProjectCheckpoints(facts) {
+    const el = document.getElementById('project-checkpoint-list');
+    if (!el) return;
+    const state = computeCheckpointState(facts);
+    el.innerHTML = state.items.map((item, index) => {
+        const issues = [];
+        if (item.missing.length) issues.push(`缺少: ${item.missing.join(', ')}`);
+        if (item.sparse.length) issues.push(`材料待补: ${item.sparse.join(', ')}`);
+        if (item.tentative.length) issues.push(`待确认: ${item.tentative.join(', ')}`);
+        const issueText = issues.length ? issues.join('；') : '材料齐全，可进入下一阶段。';
+        return `<section class="projects-checkpoint-item projects-checkpoint-item--${escapeHtml(item.status)}">
+            <div class="projects-checkpoint-index">${index + 1}</div>
+            <div class="projects-checkpoint-body">
+                <div class="projects-checkpoint-head">
+                    <h4>${escapeHtml(item.title)}</h4>
+                    ${renderWorkflowStatusPill(item.status)}
+                </div>
+                <p>${escapeHtml(item.evidence)}</p>
+                <div class="projects-checkpoint-meta">
+                    <span>负责人: ${escapeHtml(item.owner)}</span>
+                    <span>需要卡片: ${escapeHtml(item.required.join(', '))}</span>
+                </div>
+                <div class="projects-checkpoint-issues">${escapeHtml(issueText)}</div>
+            </div>
+        </section>`;
+    }).join('');
+    updateWorkflowStatChips(state);
+}
+
+function updateWorkflowStatChips(state) {
+    const reviewEl = document.getElementById('project-stat-review');
+    const checkpointsEl = document.getElementById('project-stat-checkpoints');
+    if (reviewEl) reviewEl.textContent = `审核 ${state.reviewCount || 0}`;
+    if (checkpointsEl) {
+        const total = PROJECT_CHECKPOINTS.length;
+        checkpointsEl.textContent = `${state.confirmedCount || 0}/${total} checkpoint`;
+        checkpointsEl.classList.toggle('projects-stat-chip--warn', (state.confirmedCount || 0) < total);
+    }
+}
+
+async function refreshProjectWorkflowSummary() {
+    if (!currentProjectId) return;
+    try {
+        const facts = await fetchProjectFactsSnapshot();
+        updateWorkflowStatChips(computeCheckpointState(facts));
+    } catch (e) {
+        console.warn(e);
+    }
+}
+
+async function loadProjectWorkflow() {
+    const grid = document.getElementById('project-workflow-grid');
+    if (grid) grid.innerHTML = `<div class="projects-workflow-empty">${escapeHtml(tp('common.loading'))}</div>`;
+    try {
+        const facts = await fetchProjectFactsSnapshot();
+        renderProjectWorkflow(facts);
+        updateWorkflowStatChips(computeCheckpointState(facts));
+    } catch (e) {
+        if (grid) grid.innerHTML = `<div class="projects-workflow-empty">${escapeHtml(tp('common.loadFailed'))}</div>`;
+        console.warn(e);
+    }
+}
+
+async function loadProjectCheckpoints() {
+    const el = document.getElementById('project-checkpoint-list');
+    if (el) el.innerHTML = `<div class="projects-workflow-empty">${escapeHtml(tp('common.loading'))}</div>`;
+    try {
+        const facts = await fetchProjectFactsSnapshot();
+        renderProjectCheckpoints(facts);
+    } catch (e) {
+        if (el) el.innerHTML = `<div class="projects-workflow-empty">${escapeHtml(tp('common.loadFailed'))}</div>`;
+        console.warn(e);
+    }
+}
+
 async function selectProject(id) {
     currentProjectId = id;
     const searchEl = document.getElementById('project-facts-search');
@@ -505,18 +823,21 @@ async function selectProject(id) {
         console.warn(e);
     }
     await refreshProjectHeaderStats();
+    await refreshProjectWorkflowSummary();
     switchProjectTab(currentProjectTab);
 }
 
 function switchProjectTab(tab) {
     currentProjectTab = tab;
-    ['facts', 'conversations', 'vulns', 'settings'].forEach((t) => {
+    ['facts', 'workflow', 'checkpoints', 'conversations', 'vulns', 'settings'].forEach((t) => {
         const btn = document.getElementById(`project-tab-${t}`);
         const panel = document.getElementById(`project-panel-${t}`);
         if (btn) btn.classList.toggle('is-active', t === tab);
         if (panel) panel.hidden = t !== tab;
     });
     if (tab === 'facts') loadProjectFacts();
+    if (tab === 'workflow') loadProjectWorkflow();
+    if (tab === 'checkpoints') loadProjectCheckpoints();
     if (tab === 'conversations') loadProjectConversations();
     if (tab === 'vulns') loadProjectVulnerabilities();
 }
@@ -566,6 +887,7 @@ async function loadProjectFacts() {
             hasFilter ? tp('projects.noMatchingFacts') : tp('projects.noFacts')
         }</td></tr>`;
         refreshProjectHeaderStats();
+        refreshProjectWorkflowSummary();
         return;
     }
     tbody.innerHTML = facts.map((f) => {
@@ -585,6 +907,7 @@ async function loadProjectFacts() {
         </tr>`;
     }).join('');
     refreshProjectHeaderStats();
+    refreshProjectWorkflowSummary();
 }
 
 async function refreshProjectHeaderStats() {
@@ -1084,8 +1407,11 @@ function insertProjectScopeExample() {
     const el = document.getElementById('project-edit-scope');
     if (!el) return;
     const example = {
-        targets: ['https://example.com'],
-        exclude: ['*.cdn.example.com'],
+        targets: ['问题一', '问题二', '问题三'],
+        data_files: ['data/附件1.xlsx', 'data/附件2.csv'],
+        deliverables: ['paper.pdf', 'paper.docx', 'result.json'],
+        constraints: ['优先使用题面附件', '所有图表需可由脚本复现'],
+        exclude: ['未授权外部付费数据'],
         notes: tp('projects.scopeNoteAuthorizedWebOnly'),
     };
     el.value = JSON.stringify(example, null, 2);

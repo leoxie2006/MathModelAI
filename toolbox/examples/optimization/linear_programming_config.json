@@ -1,0 +1,11 @@
+{
+  "sense": "max",
+  "variables": ["x1", "x2"],
+  "objective": {"x1": 3, "x2": 5},
+  "constraints": [
+    {"name": "machine_hours", "coefficients": {"x1": 1, "x2": 0}, "op": "<=", "rhs": 4},
+    {"name": "labor_hours", "coefficients": {"x1": 0, "x2": 2}, "op": "<=", "rhs": 12},
+    {"name": "material", "coefficients": {"x1": 3, "x2": 2}, "op": "<=", "rhs": 18}
+  ],
+  "nonnegative": true
+}

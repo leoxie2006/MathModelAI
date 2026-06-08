@@ -1,0 +1,28 @@
+name: "mathmodel-report-compile"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    TEX="$1"
+    OUTPUT="$2"
+    python3 "$ROOT/toolbox/cli/mathmodel_report.py" compile --tex "$TEX" --out "$OUTPUT"
+  - "_"
+enabled: true
+short_description: "编译 paper.pdf 并从同一 LaTeX 源导出 paper.docx"
+description: |
+  调用 latexmk/xelatex 编译 PDF，并用 pandoc 从同一 paper.tex 导出 Word，输出 compile_report.json。
+parameters:
+  - name: "tex"
+    type: "string"
+    description: "paper.tex 路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "PDF、DOCX 和 compile_report.json 输出目录。"
+    required: true
+    position: 1
+    format: "positional"

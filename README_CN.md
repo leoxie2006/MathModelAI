@@ -9,10 +9,10 @@ MathModelAI 是一个基于现有 Go + Web + MCP + 多智能体架构整理出�
 - `cmd/`：服务入口与测试入口。
 - `internal/`：后端核心架构，包括配置、HTTP API、Agent、MCP、知识库、项目事实黑板、审计和存储。
 - `web/`：静态前端。
-- `agents/`：多代理 Markdown 示例，当前保留主代理和建模分析子代理。
+- `agents/`：多代理 Markdown 示例，当前已加入“竞赛队长 + 建模手 + 编程手 + 论文手 + 专项代理”的三层协作框架。
 - `roles/`：角色 YAML 示例，当前保留默认角色和数学建模角色。
-- `skills/`：Agent Skills 示例，当前保留问题抽象和模型验证两个技能包。
-- `tools/`：MCP 工具模板，当前保留 Python 执行和 Shell 执行两个通用工具。
+- `skills/`：Agent Skills 示例，当前保留问题抽象、模型验证和三人小队协作协议。
+- `toolbox/`：自建数学建模工具箱，包含 MCP 工具、方法模板和 LaTeX/Word/PDF 论文输出产线。
 - `knowledge_base/`：数学建模知识库示例。
 - `docs/`：架构说明和快速开始。
 
@@ -41,8 +41,8 @@ http://127.0.0.1:8080/
 
 1. 先完善 `agents/` 中的数学建模多代理分工。
 2. 在 `skills/` 中沉淀建模流程，例如优化、预测、评价、仿真和报告写作。
-3. 在 `tools/` 中接入 Python 科学计算、求解器、绘图和数据处理工具。
+3. 在 `toolbox/` 中接入 Python 科学计算、求解器、绘图、数据处理工具和论文导出工具。
 4. 在 `knowledge_base/` 中增加常用模型、公式和案例。
 5. 逐步把前端中的旧业务文案替换为数学建模业务文案。
 
-更多说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 和 [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)。
+更多说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)、[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)、[docs/TEAM_AGENT_FRAMEWORK.md](docs/TEAM_AGENT_FRAMEWORK.md) 和 [docs/TODO.md](docs/TODO.md)。

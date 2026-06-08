@@ -1,0 +1,59 @@
+name: "mathmodel-regression"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    INPUT="$1"
+    CONFIG="${2:-}"
+    OUTPUT="${3:-}"
+    TARGET="${4:-}"
+    FEATURES="${5:-}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_toolkit.py" regression --input "$INPUT")
+    if [ -n "$CONFIG" ]; then CMD+=(--config "$CONFIG"); fi
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    if [ -n "$TARGET" ]; then CMD+=(--target "$TARGET"); fi
+    if [ -n "$FEATURES" ]; then CMD+=(--features "$FEATURES"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "线性回归预测并输出系数、误差和结果卡"
+description: |
+  调用 mathmodel-toolkit 的 regression 命令，对带表头 CSV 进行普通最小二乘回归。
+  输出系数、预测值、残差、RMSE、MAE、R2，以及 result_card / figure_card。
+parameters:
+  - name: "input"
+    type: "string"
+    description: "带表头 CSV 数据路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "config"
+    type: "string"
+    description: "可选 JSON 配置路径，包含 target、features、id_column。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "可选输出目录。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"
+  - name: "target"
+    type: "string"
+    description: "可选目标列名。"
+    required: false
+    default: ""
+    position: 3
+    format: "positional"
+  - name: "features"
+    type: "string"
+    description: "可选特征列，逗号分隔。"
+    required: false
+    default: ""
+    position: 4
+    format: "positional"

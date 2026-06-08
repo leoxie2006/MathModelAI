@@ -1,0 +1,54 @@
+name: "mathmodel-validate-results"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    RESULT_JSON="$1"
+    BASELINE_JSON="${2:-}"
+    OUTPUT="$3"
+    MAX_ABS="${4:-1000000000000}"
+    PERTURB="${5:-0.05}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_pipeline.py" validate --result-json "$RESULT_JSON" --output "$OUTPUT" --max-abs-value "$MAX_ABS" --perturbation "$PERTURB")
+    if [ -n "$BASELINE_JSON" ]; then CMD+=(--baseline-json "$BASELINE_JSON"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "结果级边界、基线和敏感性检查"
+description: |
+  对 result.json 做数值边界检查、可选基线对照，并输出 validation_report.json 与 review_card.md。
+parameters:
+  - name: "result_json"
+    type: "string"
+    description: "待验证 result.json 路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "baseline_json"
+    type: "string"
+    description: "可选基线 result.json 路径。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "验证输出目录。"
+    required: true
+    position: 2
+    format: "positional"
+  - name: "max_abs_value"
+    type: "string"
+    description: "数值绝对值上限，默认 1e12。"
+    required: false
+    default: "1000000000000"
+    position: 3
+    format: "positional"
+  - name: "perturbation"
+    type: "string"
+    description: "敏感性扰动比例记录，默认 0.05。"
+    required: false
+    default: "0.05"
+    position: 4
+    format: "positional"

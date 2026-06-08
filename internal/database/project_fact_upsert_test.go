@@ -20,12 +20,12 @@ func TestUpsertProjectFact_preservesBodyOnEmptyUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	const body = "## 攻击链\n1. step\n```http\nGET / HTTP/1.1\n```\n"
+	const body = "## 模型规格\n- 目标: 多指标评价\n## 验证方案\n- 基线: 等权 TOPSIS\n"
 	_, err = db.UpsertProjectFact(&ProjectFact{
 		ProjectID: proj.ID,
-		FactKey:   "finding/sqli-login",
-		Category:  "finding",
-		Summary:   "SQLi on /login",
+		FactKey:   "model/topsis-plan",
+		Category:  "model",
+		Summary:   "P1 使用 TOPSIS 做多指标评价",
 		Body:      body,
 	})
 	if err != nil {
@@ -34,21 +34,21 @@ func TestUpsertProjectFact_preservesBodyOnEmptyUpdate(t *testing.T) {
 
 	updated, err := db.UpsertProjectFact(&ProjectFact{
 		ProjectID: proj.ID,
-		FactKey:   "finding/sqli-login",
-		Summary:   "SQLi on /login (confirmed)",
+		FactKey:   "model/topsis-plan",
+		Summary:   "P1 使用 TOPSIS 做多指标评价（已确认）",
 		Body:      "",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if updated.Summary != "SQLi on /login (confirmed)" {
+	if updated.Summary != "P1 使用 TOPSIS 做多指标评价（已确认）" {
 		t.Fatalf("summary=%q", updated.Summary)
 	}
 	if updated.Body != body {
-		t.Fatalf("returned body=%q want preserved attack chain", updated.Body)
+		t.Fatalf("returned body=%q want preserved modeling card", updated.Body)
 	}
 
-	fromDB, err := db.GetProjectFactByKey(proj.ID, "finding/sqli-login")
+	fromDB, err := db.GetProjectFactByKey(proj.ID, "model/topsis-plan")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +72,7 @@ func TestUpsertProjectFact_replacesBodyWhenProvided(t *testing.T) {
 
 	_, err = db.UpsertProjectFact(&ProjectFact{
 		ProjectID: proj.ID,
-		FactKey:   "target/primary",
+		FactKey:   "problem/requirements",
 		Summary:   "v1",
 		Body:      "old body",
 	})
@@ -83,7 +83,7 @@ func TestUpsertProjectFact_replacesBodyWhenProvided(t *testing.T) {
 	const newBody = "new body with evidence"
 	updated, err := db.UpsertProjectFact(&ProjectFact{
 		ProjectID: proj.ID,
-		FactKey:   "target/primary",
+		FactKey:   "problem/requirements",
 		Summary:   "v2",
 		Body:      newBody,
 	})
@@ -107,7 +107,7 @@ func TestRestoreProjectFact(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	key := "target/restore-me"
+	key := "problem/restore-me"
 	_, err = db.UpsertProjectFact(&ProjectFact{
 		ProjectID:  proj.ID,
 		FactKey:    key,
@@ -150,8 +150,8 @@ func TestUpsertProjectFact_createsVersionOnContentChange(t *testing.T) {
 
 	created, err := db.UpsertProjectFact(&ProjectFact{
 		ProjectID: proj.ID,
-		FactKey:   "finding/xss",
-		Category:  "finding",
+		FactKey:   "model/version-test",
+		Category:  "model",
 		Summary:   "v1",
 		Body:      "body v1",
 	})
@@ -164,7 +164,7 @@ func TestUpsertProjectFact_createsVersionOnContentChange(t *testing.T) {
 
 	updated, err := db.UpsertProjectFact(&ProjectFact{
 		ProjectID: proj.ID,
-		FactKey:   "finding/xss",
+		FactKey:   "model/version-test",
 		Summary:   "v2",
 		Body:      "body v2",
 	})

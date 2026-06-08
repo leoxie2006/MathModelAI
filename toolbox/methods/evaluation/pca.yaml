@@ -1,0 +1,28 @@
+id: pca
+name: 主成分分析
+category: evaluation
+applies_when: 多指标降维、构造综合指标或消除共线性，需要保留主要方差信息。
+inputs:
+  - 指标矩阵
+  - 标准化方法
+  - 主成分保留规则
+outputs:
+  - 主成分载荷
+  - 解释方差比
+  - 主成分得分
+  - 综合得分或降维数据
+assumptions:
+  - 线性组合能表达主要信息
+  - 方差大代表信息量大
+  - 指标标准化合理
+validation:
+  - KMO 或相关矩阵检查
+  - 累计解释方差
+  - 载荷解释合理性
+  - 与原始指标相关性检查
+pitfalls:
+  - 不标准化导致量纲支配
+  - 主成分不可解释
+  - 方差贡献高但与题意无关
+  - 用 PCA 排名却不说明方向
+future_cli: mathmodel-toolkit pca --input data.xlsx --config config.yaml

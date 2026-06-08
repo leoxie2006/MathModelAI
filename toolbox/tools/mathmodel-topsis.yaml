@@ -1,0 +1,50 @@
+name: "mathmodel-topsis"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    INPUT="$1"
+    CONFIG="${2:-}"
+    OUTPUT="${3:-}"
+    ID_COLUMN="${4:-}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_toolkit.py" topsis --input "$INPUT")
+    if [ -n "$CONFIG" ]; then CMD+=(--config "$CONFIG"); fi
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    if [ -n "$ID_COLUMN" ]; then CMD+=(--id-column "$ID_COLUMN"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "TOPSIS 多指标评价并输出 result_card / figure_card"
+description: |
+  调用 mathmodel-toolkit 的 TOPSIS 方法，对 CSV 指标矩阵进行多指标评价和方案排序。
+  输出 JSON 到 stdout；若提供 output_dir，会生成 result.json、result_card.md、figure_card.md 和 rank_table.csv。
+parameters:
+  - name: "input"
+    type: "string"
+    description: "带表头的 CSV 指标矩阵路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "config"
+    type: "string"
+    description: "可选 JSON 配置路径，包含 columns、directions、weights。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "可选输出目录；提供后写入 result_card 和 figure_card。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"
+  - name: "id_column"
+    type: "string"
+    description: "可选方案 ID 列名；留空时自动推断第一列。"
+    required: false
+    default: ""
+    position: 3
+    format: "positional"

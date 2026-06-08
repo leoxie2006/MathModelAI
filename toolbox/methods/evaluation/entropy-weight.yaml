@@ -1,0 +1,28 @@
+id: entropy-weight
+name: 熵权法
+category: evaluation
+applies_when: 需要基于数据离散程度客观确定多指标权重。
+inputs:
+  - 指标矩阵
+  - 指标方向
+  - 归一化方法
+outputs:
+  - 熵值
+  - 差异系数
+  - 指标权重
+  - 标准化矩阵
+assumptions:
+  - 指标差异越大信息量越高
+  - 样本方案可比较
+  - 指标同向化正确
+validation:
+  - 指标方向检查
+  - 零值与常数列检查
+  - 与等权/AHP 权重对比
+  - 权重扰动下排名稳定性
+pitfalls:
+  - 正负向指标同向化错误
+  - 常数列导致无效权重
+  - 把客观权重误称价值偏好
+  - 缺少归一化说明
+future_cli: mathmodel-toolkit entropy-weight --input data.xlsx --config config.yaml

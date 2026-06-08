@@ -1,0 +1,29 @@
+id: topsis
+name: TOPSIS
+category: evaluation
+applies_when: 多指标评价、方案排序，需要计算方案到理想解和负理想解的相对接近度。
+inputs:
+  - 指标矩阵
+  - 指标方向
+  - 指标权重
+  - 归一化方法
+outputs:
+  - 综合得分
+  - 排名
+  - 正负理想距离
+  - 敏感性分析结果
+assumptions:
+  - 指标可同向化和归一化
+  - 方案之间可比较
+  - 权重来源可解释
+validation:
+  - 指标方向检查
+  - 权重扰动
+  - 极端样本检查
+  - 与加权求和结果对比
+pitfalls:
+  - 指标方向写反
+  - 权重无来源
+  - 量纲未处理
+  - 把排名稳定性当作默认成立
+future_cli: mathmodel-toolkit topsis --input data.xlsx --config config.yaml

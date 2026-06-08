@@ -1,0 +1,29 @@
+id: exponential-smoothing
+name: 指数平滑
+category: prediction
+applies_when: 时间序列较短或需要快速基线预测，可处理水平、趋势和季节项。
+inputs:
+  - 时间序列
+  - 趋势/季节配置
+  - 平滑参数范围
+  - 预测步长
+outputs:
+  - 预测序列
+  - 平滑参数
+  - 误差指标
+  - 趋势/季节分量
+assumptions:
+  - 近期观测对未来更重要
+  - 序列结构可由水平、趋势、季节项表达
+  - 无强烈结构性断点
+validation:
+  - 留后验证
+  - 与 naive/移动平均基线对照
+  - 检查预测区间合理性
+  - 对平滑参数扰动
+pitfalls:
+  - 季节周期设错
+  - 用短序列拟合复杂季节模型
+  - 只看拟合误差不看预测误差
+  - 忽略异常点对平滑的影响
+future_cli: mathmodel-toolkit exp-smoothing --input data.xlsx --config config.yaml

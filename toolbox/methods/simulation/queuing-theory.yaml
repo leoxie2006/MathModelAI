@@ -1,0 +1,29 @@
+id: queuing-theory
+name: 排队论
+category: simulation
+applies_when: 服务系统等待时间、队长、服务能力和资源配置分析。
+inputs:
+  - 到达率
+  - 服务率
+  - 服务台数量
+  - 排队规则
+outputs:
+  - 平均等待时间
+  - 平均队长
+  - 系统利用率
+  - 服务水平指标
+assumptions:
+  - 到达和服务过程可由指定分布近似
+  - 系统处于稳定状态
+  - 排队规则明确
+validation:
+  - 稳定条件检查
+  - 与离散事件仿真对照
+  - 峰值到达率敏感性
+  - 极端服务台数量检查
+pitfalls:
+  - 忽略稳定条件
+  - 平均到达率掩盖高峰拥堵
+  - 服务分布假设无依据
+  - 不区分等待时间和系统停留时间
+future_cli: mathmodel-toolkit queue --input config.yaml --output result.json

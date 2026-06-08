@@ -1,0 +1,29 @@
+id: arima
+name: ARIMA
+category: prediction
+applies_when: 单变量时间序列预测，序列具有自相关结构且可通过差分近似平稳。
+inputs:
+  - 时间序列
+  - 时间频率
+  - p/d/q 参数范围
+  - 预测步长
+outputs:
+  - 预测序列
+  - 置信区间
+  - AIC/BIC
+  - 残差诊断
+assumptions:
+  - 序列时间间隔稳定
+  - 差分后近似平稳
+  - 历史规律对预测期仍有参考价值
+validation:
+  - ADF 平稳性检验
+  - ACF/PACF 检查
+  - 滚动预测误差
+  - 残差白噪声检验
+pitfalls:
+  - 未处理缺失时间点
+  - 参数只凭默认值
+  - 趋势突变仍强行外推
+  - 忽略节假日或外生因素
+future_cli: mathmodel-toolkit arima --input data.xlsx --config config.yaml

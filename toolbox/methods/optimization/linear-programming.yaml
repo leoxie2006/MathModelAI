@@ -1,0 +1,29 @@
+id: linear-programming
+name: 线性规划
+category: optimization
+applies_when: 目标函数与主要约束可线性表达，适合资源分配、运输、排产和选址的基础版本。
+inputs:
+  - 决策变量定义
+  - 线性目标函数系数
+  - 线性约束矩阵与上下界
+  - 变量非负或上下界
+outputs:
+  - 最优变量取值
+  - 目标函数值
+  - 约束松弛量
+  - 可行性状态
+assumptions:
+  - 目标和约束的线性近似可接受
+  - 参数在求解周期内稳定
+  - 决策变量可连续取值
+validation:
+  - 检查约束是否全部满足
+  - 与人工构造小样例对照
+  - 对关键系数做敏感性分析
+  - 检查松弛约束是否符合业务直觉
+pitfalls:
+  - 把整数决策误写成连续变量
+  - 漏掉资源守恒或需求下限
+  - 目标函数方向写反
+  - 量纲不一致导致权重失真
+future_cli: mathmodel-toolkit lp --input data.xlsx --config config.yaml

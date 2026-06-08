@@ -1,6 +1,5 @@
 // 设置相关功能 - 数学建模 AI 基础能力配置
-// 保留: basic(AI 模型/Agent/MCP/HITL)、infocollect(信息收集)、knowledge(知识库)
-// 删除: c2 / robots(企微/钉钉/飞书)/ terminal / audit / security
+// 保留: basic(AI 模型/Agent/MCP/多代理)、knowledge(知识库)
 let currentConfig = null;
 let allTools = [];
 let alwaysVisibleToolNames = new Set();
@@ -30,8 +29,8 @@ let toolsPagination = {
 };
 
 /** 根据多代理开关,启用/禁用 Eino 编排选项 */
-function syncRobotAgentModeSelectOptions(multiEnabled) {
-    const sel = document.getElementById('multi-agent-robot-mode');
+function syncMultiAgentModeSelectOptions(multiEnabled) {
+    const sel = document.getElementById('multi-agent-default-mode');
     if (!sel) return;
     ['deep', 'plan_execute', 'supervisor'].forEach(function (v) {
         const opt = sel.querySelector('option[value="' + v + '"]');
@@ -89,14 +88,6 @@ function fillConfigForm(config) {
         if (mcpPortEl) mcpPortEl.value = config.mcp.port || 8081;
     }
 
-    // HITL 配置
-    if (config.hitl) {
-        const whitelistEl = document.getElementById('hitl-whitelist');
-        if (whitelistEl) {
-            whitelistEl.value = (config.hitl.tool_whitelist || []).join(', ');
-        }
-    }
-
     // 知识库配置
     if (config.knowledge) {
         const kEnabledEl = document.getElementById('knowledge-enabled');
@@ -110,15 +101,15 @@ function fillConfigForm(config) {
         const maEnEl = document.getElementById('multi-agent-enabled');
         if (maEnEl) {
             maEnEl.checked = config.multi_agent.enabled !== false;
-            syncRobotAgentModeSelectOptions(maEnEl.checked);
+            syncMultiAgentModeSelectOptions(maEnEl.checked);
         }
-        const maRobotMode = document.getElementById('multi-agent-robot-mode');
-        if (maRobotMode) {
+        const maDefaultMode = document.getElementById('multi-agent-default-mode');
+        if (maDefaultMode) {
             let mode = (config.multi_agent.robot_default_agent_mode || 'eino_single').trim().toLowerCase();
             if (!['eino_single', 'deep', 'plan_execute', 'supervisor'].includes(mode)) {
                 mode = 'eino_single';
             }
-            maRobotMode.value = mode;
+            maDefaultMode.value = mode;
         }
     }
 }
@@ -167,13 +158,6 @@ async function applySettings() {
         port: isNaN(mcpPort) ? 8081 : mcpPort,
     };
 
-    // HITL
-    const hitlWhitelist = document.getElementById('hitl-whitelist')?.value;
-    if (hitlWhitelist !== undefined) {
-        const list = (hitlWhitelist || '').split(',').map(s => s.trim()).filter(Boolean);
-        update.hitl = { tool_whitelist: list };
-    }
-
     // 知识库
     const kEnabled = document.getElementById('knowledge-enabled')?.checked;
     const kBase = document.getElementById('knowledge-base-path')?.value?.trim();
@@ -184,11 +168,11 @@ async function applySettings() {
 
     // 多代理
     const maEnabled = document.getElementById('multi-agent-enabled')?.checked;
-    const maRobotMode = document.getElementById('multi-agent-robot-mode')?.value;
+    const maDefaultMode = document.getElementById('multi-agent-default-mode')?.value;
     if (maEnabled !== undefined) {
         update.multi_agent = {
             enabled: !!maEnabled,
-            robot_default_agent_mode: maRobotMode || 'eino_single',
+            robot_default_agent_mode: maDefaultMode || 'eino_single',
         };
     }
 
@@ -311,4 +295,4 @@ window.applySettings = applySettings;
 window.testOpenAI = testOpenAI;
 window.toolsGoPage = toolsGoPage;
 window.loadConfig = loadConfig;
-window.syncRobotAgentModeSelectOptions = syncRobotAgentModeSelectOptions;
+window.syncMultiAgentModeSelectOptions = syncMultiAgentModeSelectOptions;

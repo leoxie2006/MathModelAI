@@ -1,0 +1,51 @@
+name: "mathmodel-review-code"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    RUN_DIR="${1:-}"
+    SCRIPT="${2:-}"
+    RESULT_JSON="${3:-}"
+    OUTPUT="${4:-}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_pipeline.py" review --allow-fail)
+    if [ -n "$RUN_DIR" ]; then CMD+=(--run-dir "$RUN_DIR"); fi
+    if [ -n "$SCRIPT" ]; then CMD+=(--script "$SCRIPT"); fi
+    if [ -n "$RESULT_JSON" ]; then CMD+=(--result-json "$RESULT_JSON"); fi
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "审核代码和结果，检查泄露、指标、边界、seed、图表一致性"
+description: |
+  对运行目录或指定脚本/result.json 做启发式审核，输出 review_report.json 和 review_card.md。
+parameters:
+  - name: "run_dir"
+    type: "string"
+    description: "可选运行目录，通常由 mathmodel-run-python 输出。"
+    required: false
+    default: ""
+    position: 0
+    format: "positional"
+  - name: "script"
+    type: "string"
+    description: "可选脚本路径。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "result_json"
+    type: "string"
+    description: "可选 result.json 路径。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"
+  - name: "output_dir"
+    type: "string"
+    description: "可选审核输出目录。"
+    required: false
+    default: ""
+    position: 3
+    format: "positional"

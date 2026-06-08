@@ -1,0 +1,31 @@
+name: "mathmodel-report-preflight"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    TEX="$1"
+    OUTPUT="${2:-}"
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_report.py" preflight --tex "$TEX")
+    if [ -n "$OUTPUT" ]; then CMD+=(--output "$OUTPUT"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "编译前检查图片路径、材料缺口和引用"
+description: |
+  对 paper.tex 做编译前检查，输出 preflight_report.json；缺图片或 MATERIAL GAP 时返回失败。
+parameters:
+  - name: "tex"
+    type: "string"
+    description: "paper.tex 路径。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "output"
+    type: "string"
+    description: "可选 preflight_report.json 输出路径。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
