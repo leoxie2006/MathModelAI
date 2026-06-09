@@ -6,6 +6,8 @@ venv/
 # Runtime data
 data/
 tmp/
+chat_uploads/
+workspaces/
 *.db
 *.db-shm
 *.db-wal

@@ -21477,6 +21477,7 @@ button.chat-files-dropdown-item:hover:not(:disabled) {
     background: #fff;
 }
 #project-panel-facts,
+#project-panel-files,
 #project-panel-conversations,
 #project-panel-vulns {
     display: flex;
@@ -21485,11 +21486,13 @@ button.chat-files-dropdown-item:hover:not(:disabled) {
     min-height: 0;
 }
 #project-panel-facts .projects-fact-toolbar,
+#project-panel-files .projects-panel-toolbar,
 #project-panel-vulns .projects-fact-toolbar,
 #project-panel-conversations .projects-panel-toolbar {
     flex: 0 0 auto;
 }
 #project-panel-facts .projects-table-wrap,
+#project-panel-files .projects-table-wrap,
 #project-panel-conversations .projects-table-wrap,
 #project-panel-vulns .projects-table-wrap {
     flex: 1 1 auto;
@@ -21500,12 +21503,77 @@ button.chat-files-dropdown-item:hover:not(:disabled) {
     -webkit-overflow-scrolling: touch;
 }
 #project-panel-facts .projects-table-wrap .data-table--projects thead th,
+#project-panel-files .projects-table-wrap .data-table--projects thead th,
 #project-panel-conversations .projects-table-wrap .data-table--projects thead th,
 #project-panel-vulns .projects-table-wrap .data-table--projects thead th {
     position: sticky;
     top: 0;
     z-index: 2;
     box-shadow: 0 1px 0 var(--border-color, #e2e8f0);
+}
+.projects-files-toolbar {
+    align-items: flex-end;
+}
+.projects-file-upload,
+.projects-file-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.projects-file-type-select {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+.projects-file-type-select select,
+#project-file-input {
+    min-height: 34px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    color: #0f172a;
+    font-size: 0.8125rem;
+}
+.projects-file-type-select select {
+    padding: 0 10px;
+}
+#project-file-input {
+    max-width: 320px;
+    padding: 5px 8px;
+}
+.projects-workspace-root {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0 0 12px;
+    color: #475569;
+    font-size: 0.8125rem;
+}
+.projects-workspace-root code,
+.projects-file-path {
+    padding: 2px 5px;
+    border-radius: 5px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 0.75rem;
+    word-break: break-all;
+}
+.projects-file-name {
+    font-weight: 600;
+    color: #0f172a;
+    word-break: break-word;
+}
+.projects-file-hash {
+    margin-top: 3px;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 .projects-panel-toolbar--hint {
     margin-bottom: 14px;

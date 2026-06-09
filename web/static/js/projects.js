@@ -5,6 +5,7 @@ let projectsCache = [];
 let projectsCacheAll = [];
 let currentProjectId = null;
 let currentProjectTab = 'facts';
+let projectFilesCache = [];
 const projectNameById = {};
 let _projectsListReady = false;
 let _projectsFetchPromise = null;
@@ -782,6 +783,7 @@ async function selectProject(id) {
     const vulnSearchEl = document.getElementById('project-vulns-search');
     const vulnSevEl = document.getElementById('project-vulns-filter-severity');
     const vulnStatusEl = document.getElementById('project-vulns-filter-status');
+    const fileInputEl = document.getElementById('project-file-input');
     if (searchEl) searchEl.value = '';
     if (catEl) catEl.value = '';
     if (confEl) confEl.value = '';
@@ -789,6 +791,8 @@ async function selectProject(id) {
     if (vulnSearchEl) vulnSearchEl.value = '';
     if (vulnSevEl) vulnSevEl.value = '';
     if (vulnStatusEl) vulnStatusEl.value = '';
+    if (fileInputEl) fileInputEl.value = '';
+    projectFilesCache = [];
     renderProjectsSidebar();
     updateProjectsDetailVisibility();
     try {
@@ -829,17 +833,163 @@ async function selectProject(id) {
 
 function switchProjectTab(tab) {
     currentProjectTab = tab;
-    ['facts', 'workflow', 'checkpoints', 'conversations', 'vulns', 'settings'].forEach((t) => {
+    ['facts', 'files', 'workflow', 'checkpoints', 'conversations', 'vulns', 'settings'].forEach((t) => {
         const btn = document.getElementById(`project-tab-${t}`);
         const panel = document.getElementById(`project-panel-${t}`);
         if (btn) btn.classList.toggle('is-active', t === tab);
         if (panel) panel.hidden = t !== tab;
     });
     if (tab === 'facts') loadProjectFacts();
+    if (tab === 'files') loadProjectFiles();
     if (tab === 'workflow') loadProjectWorkflow();
     if (tab === 'checkpoints') loadProjectCheckpoints();
     if (tab === 'conversations') loadProjectConversations();
     if (tab === 'vulns') loadProjectVulnerabilities();
+}
+
+function formatProjectFileSize(bytes) {
+    const n = Number(bytes || 0);
+    if (!Number.isFinite(n) || n <= 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let value = n;
+    let idx = 0;
+    while (value >= 1024 && idx < units.length - 1) {
+        value /= 1024;
+        idx += 1;
+    }
+    return `${value.toFixed(idx === 0 ? 0 : 1)} ${units[idx]}`;
+}
+
+function projectFileTypeLabel(type) {
+    const map = {
+        attachments: '附件',
+        data: '数据',
+        code: '代码',
+        outputs: '结果',
+        paper: '论文',
+        cards: '卡片',
+    };
+    return map[type] || type || '文件';
+}
+
+function renderProjectFiles(files) {
+    const tbody = document.getElementById('project-files-tbody');
+    if (!tbody) return;
+    const list = files || [];
+    if (!list.length) {
+        tbody.innerHTML = '<tr class="is-empty-row"><td colspan="6">暂无文件。请上传赛题附件，或让 Agent 在工作空间生成脚本、结果和论文后点击“扫描工作区”。</td></tr>';
+        return;
+    }
+    tbody.innerHTML = list.map((f) => {
+        const id = escapeHtml(f.id || '');
+        const abs = escapeHtml(f.abs_path || '');
+        const rel = escapeHtml(f.rel_path || '');
+        return `<tr>
+            <td>${escapeHtml(projectFileTypeLabel(f.file_type))}</td>
+            <td>
+                <div class="projects-file-name">${escapeHtml(f.original_name || f.stored_name || '')}</div>
+                <div class="projects-file-hash">${escapeHtml((f.sha256 || '').slice(0, 12))}</div>
+            </td>
+            <td>${escapeHtml(formatProjectFileSize(f.size_bytes))}</td>
+            <td><code class="projects-file-path" title="${abs}">${rel}</code></td>
+            <td>${escapeHtml(formatProjectTime(f.updated_at || f.created_at))}</td>
+            <td class="col-actions">
+                <div class="projects-table-actions">
+                    <button type="button" class="projects-action-btn projects-action-btn--view" data-path="${abs}" onclick="copyProjectFilePath(this.dataset.path)">复制路径</button>
+                    <button type="button" class="projects-action-btn projects-action-btn--edit" onclick="downloadProjectFile('${id}')">下载</button>
+                    <button type="button" class="projects-action-btn projects-action-btn--danger" onclick="deleteProjectFile('${id}')">删除</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+async function loadProjectFiles() {
+    const tbody = document.getElementById('project-files-tbody');
+    const rootEl = document.getElementById('project-workspace-root');
+    if (!tbody || !currentProjectId) return;
+    tbody.innerHTML = `<tr class="is-empty-row"><td colspan="6">${escapeHtml(tp('common.loading'))}</td></tr>`;
+    const res = await apiFetch(`/api/projects/${encodeURIComponent(currentProjectId)}/files?limit=500`);
+    if (!res.ok) {
+        tbody.innerHTML = `<tr class="is-empty-row"><td colspan="6">加载工作空间失败</td></tr>`;
+        return;
+    }
+    const data = await res.json();
+    projectFilesCache = data.files || [];
+    if (rootEl) {
+        const dirs = (data.dirs || []).join(' / ');
+        rootEl.innerHTML = `工作空间: <code>${escapeHtml(data.workspace_root || '')}</code><span>${escapeHtml(dirs)}</span>`;
+    }
+    renderProjectFiles(projectFilesCache);
+}
+
+async function uploadProjectFiles() {
+    if (!currentProjectId) return;
+    const input = document.getElementById('project-file-input');
+    const typeEl = document.getElementById('project-file-type');
+    const files = input && input.files ? Array.from(input.files) : [];
+    if (!files.length) {
+        showNotification('请选择要上传的文件', 'error');
+        return;
+    }
+    const fileType = typeEl ? typeEl.value : 'attachments';
+    for (const file of files) {
+        const form = new FormData();
+        form.append('file', file);
+        form.append('file_type', fileType);
+        form.append('purpose', fileType);
+        const res = typeof apiUploadWithProgress === 'function'
+            ? await apiUploadWithProgress(`/api/projects/${encodeURIComponent(currentProjectId)}/files`, form)
+            : await apiFetch(`/api/projects/${encodeURIComponent(currentProjectId)}/files`, { method: 'POST', body: form });
+        if (!res.ok) {
+            const msg = await res.text();
+            showNotification(`上传失败: ${file.name} ${msg}`, 'error');
+            return;
+        }
+    }
+    if (input) input.value = '';
+    showNotification('文件已上传到项目工作空间', 'success');
+    await loadProjectFiles();
+}
+
+async function scanProjectWorkspace() {
+    if (!currentProjectId) return;
+    const res = await apiFetch(`/api/projects/${encodeURIComponent(currentProjectId)}/files/scan`, { method: 'POST' });
+    if (!res.ok) {
+        showNotification('扫描工作区失败: ' + await res.text(), 'error');
+        return;
+    }
+    const data = await res.json().catch(() => ({}));
+    showNotification(`已扫描 ${data.count || 0} 个文件`, 'success');
+    await loadProjectFiles();
+}
+
+function downloadProjectFile(fileId) {
+    if (!currentProjectId || !fileId) return;
+    window.open(`/api/projects/${encodeURIComponent(currentProjectId)}/files/${encodeURIComponent(fileId)}/download`, '_blank');
+}
+
+async function deleteProjectFile(fileId) {
+    if (!currentProjectId || !fileId) return;
+    if (!confirm('确定删除这个项目文件吗？文件本体和索引都会删除。')) return;
+    const res = await apiFetch(`/api/projects/${encodeURIComponent(currentProjectId)}/files/${encodeURIComponent(fileId)}`, { method: 'DELETE' });
+    if (!res.ok) {
+        showNotification('删除文件失败: ' + await res.text(), 'error');
+        return;
+    }
+    showNotification('项目文件已删除', 'success');
+    await loadProjectFiles();
+}
+
+async function copyProjectFilePath(path) {
+    const text = path || '';
+    if (!text) return;
+    try {
+        await navigator.clipboard.writeText(text);
+        showNotification('文件路径已复制', 'success');
+    } catch (e) {
+        window.prompt('复制文件路径', text);
+    }
 }
 
 function buildProjectFactsQueryParams() {
@@ -1894,6 +2044,12 @@ window.saveProjectModal = saveProjectModal;
 window.closeProjectModal = closeProjectModal;
 window.selectProject = selectProject;
 window.switchProjectTab = switchProjectTab;
+window.loadProjectFiles = loadProjectFiles;
+window.uploadProjectFiles = uploadProjectFiles;
+window.scanProjectWorkspace = scanProjectWorkspace;
+window.downloadProjectFile = downloadProjectFile;
+window.deleteProjectFile = deleteProjectFile;
+window.copyProjectFilePath = copyProjectFilePath;
 window.showAddFactModal = showAddFactModal;
 window.showEditFactModal = showEditFactModal;
 window.editFactFromDetail = editFactFromDetail;

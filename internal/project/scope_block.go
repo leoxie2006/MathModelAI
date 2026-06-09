@@ -124,6 +124,13 @@ func BuildProjectBlackboardBlock(db *database.DB, projectID string, cfg config.P
 	if scope := strings.TrimSpace(BuildScopeBlock(proj)); scope != "" {
 		parts = append(parts, scope)
 	}
+	workspace, err := BuildWorkspaceIndexBlock(db, projectID)
+	if err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(workspace) != "" {
+		parts = append(parts, workspace)
+	}
 	index, err := BuildFactIndexBlock(db, projectID, cfg)
 	if err != nil {
 		return "", err

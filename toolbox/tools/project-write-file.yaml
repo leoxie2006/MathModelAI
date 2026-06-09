@@ -1,0 +1,35 @@
+name: "project-write-file"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    PROJECT_ID="$1"
+    REL_PATH="$2"
+    CONTENT="$3"
+    "$ROOT/toolbox/cli/mathmodel-workspace" write --project-id "$PROJECT_ID" --root "$ROOT/workspaces" --rel-path "$REL_PATH" --content "$CONTENT"
+  - "_"
+enabled: true
+short_description: "向项目工作空间写入文本文件"
+description: |
+  在 workspaces/{project_id}/ 下写入脚本、配置、LaTeX、Markdown 卡片等文本文件。rel_path 必须以 attachments、data、code、outputs、paper 或 cards 开头。
+parameters:
+  - name: "project_id"
+    type: "string"
+    description: "项目 ID。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "rel_path"
+    type: "string"
+    description: "工作空间内相对路径，例如 code/problem1.py 或 paper/main.tex。"
+    required: true
+    position: 1
+    format: "positional"
+  - name: "content"
+    type: "string"
+    description: "要写入的文本内容。"
+    required: true
+    position: 2
+    format: "positional"

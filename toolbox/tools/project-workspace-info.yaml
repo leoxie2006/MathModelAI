@@ -1,0 +1,21 @@
+name: "project-workspace-info"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    PROJECT_ID="$1"
+    "$ROOT/toolbox/cli/mathmodel-workspace" info --project-id "$PROJECT_ID" --root "$ROOT/workspaces"
+  - "_"
+enabled: true
+short_description: "查看项目工作空间目录和文件"
+description: |
+  返回 workspaces/{project_id}/ 下 attachments、data、code、outputs、paper、cards 的目录位置和当前文件列表。
+parameters:
+  - name: "project_id"
+    type: "string"
+    description: "项目 ID。"
+    required: true
+    position: 0
+    format: "positional"

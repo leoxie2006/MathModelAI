@@ -579,6 +579,7 @@ func setupRoutes(
 		protected.GET("/agent-loop/tasks", agentHandler.ListAgentTasks)
 		protected.GET("/agent-loop/task-events", agentHandler.SubscribeAgentTaskEvents)
 		protected.GET("/agent-loop/tasks/completed", agentHandler.ListCompletedTasks)
+		protected.POST("/chat-uploads", agentHandler.UploadChatAttachment)
 
 		// Eino DeepAgent 多代理（与单 Agent 并存，需 config.multi_agent.enabled）
 		// 多代理路由常注册；是否可用由运行时 h.config.MultiAgent.Enabled 决定（应用配置后无需重启）
@@ -784,6 +785,12 @@ func setupRoutes(
 		protected.GET("/projects/:id", projectHandler.GetProject)
 		protected.PUT("/projects/:id", projectHandler.UpdateProject)
 		protected.DELETE("/projects/:id", projectHandler.DeleteProject)
+		protected.GET("/projects/:id/files", projectHandler.ListProjectFiles)
+		protected.POST("/projects/:id/files", projectHandler.UploadProjectFile)
+		protected.POST("/projects/:id/files/text", projectHandler.WriteProjectFile)
+		protected.POST("/projects/:id/files/scan", projectHandler.ScanProjectWorkspace)
+		protected.GET("/projects/:id/files/:fileId/download", projectHandler.DownloadProjectFile)
+		protected.DELETE("/projects/:id/files/:fileId", projectHandler.DeleteProjectFile)
 		protected.GET("/projects/:id/facts", projectHandler.ListFacts)
 		protected.GET("/projects/:id/facts/:factId/previous-version", projectHandler.GetFactPreviousVersion)
 		protected.GET("/projects/:id/facts/:factId/versions", projectHandler.ListFactVersions)

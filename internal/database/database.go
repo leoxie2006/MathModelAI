@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sync"
 	"strings"
+	"sync"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -321,6 +321,28 @@ func (db *DB) initTables() error {
 		updated_at DATETIME NOT NULL
 	);`
 
+	// 创建项目文件表（项目级工作空间索引）
+	createProjectFilesTable := `
+	CREATE TABLE IF NOT EXISTS project_files (
+		id TEXT PRIMARY KEY,
+		project_id TEXT NOT NULL,
+		original_name TEXT NOT NULL,
+		stored_name TEXT NOT NULL,
+		rel_path TEXT NOT NULL,
+		abs_path TEXT NOT NULL,
+		file_type TEXT NOT NULL DEFAULT 'attachments',
+		purpose TEXT NOT NULL DEFAULT '',
+		mime_type TEXT NOT NULL DEFAULT '',
+		size_bytes INTEGER NOT NULL DEFAULT 0,
+		sha256 TEXT NOT NULL DEFAULT '',
+		source TEXT NOT NULL DEFAULT 'upload',
+		note TEXT NOT NULL DEFAULT '',
+		created_at DATETIME NOT NULL,
+		updated_at DATETIME NOT NULL,
+		FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+		UNIQUE(project_id, rel_path)
+	);`
+
 	// 创建项目事实表（黑板）
 	createProjectFactsTable := `
 	CREATE TABLE IF NOT EXISTS project_facts (
@@ -595,6 +617,9 @@ func (db *DB) initTables() error {
 	CREATE INDEX IF NOT EXISTS idx_vulnerabilities_created_at ON vulnerabilities(created_at);
 	CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 	CREATE INDEX IF NOT EXISTS idx_projects_updated_at ON projects(updated_at);
+	CREATE INDEX IF NOT EXISTS idx_project_files_project_id ON project_files(project_id);
+	CREATE INDEX IF NOT EXISTS idx_project_files_file_type ON project_files(file_type);
+	CREATE INDEX IF NOT EXISTS idx_project_files_rel_path ON project_files(project_id, rel_path);
 	CREATE INDEX IF NOT EXISTS idx_project_facts_project_id ON project_facts(project_id);
 	CREATE INDEX IF NOT EXISTS idx_project_facts_confidence ON project_facts(confidence);
 	CREATE INDEX IF NOT EXISTS idx_project_facts_related_vuln ON project_facts(related_vulnerability_id);
@@ -676,6 +701,10 @@ func (db *DB) initTables() error {
 		return fmt.Errorf("创建projects表失败: %w", err)
 	}
 
+	if _, err := db.Exec(createProjectFilesTable); err != nil {
+		return fmt.Errorf("创建project_files表失败: %w", err)
+	}
+
 	if _, err := db.Exec(createProjectFactsTable); err != nil {
 		return fmt.Errorf("创建project_facts表失败: %w", err)
 	}
@@ -753,6 +782,9 @@ func (db *DB) initTables() error {
 
 	if err := db.migrateProjectsTable(); err != nil {
 		db.logger.Warn("迁移projects相关表失败", zap.Error(err))
+	}
+	if err := db.migrateProjectFilesTable(); err != nil {
+		db.logger.Warn("迁移project_files表失败", zap.Error(err))
 	}
 	if err := db.migrateProjectFactVersionsTable(); err != nil {
 		db.logger.Warn("迁移project_fact_versions表失败", zap.Error(err))
@@ -1150,6 +1182,37 @@ func (db *DB) migrateProjectsTable() error {
 			}
 		}
 	}
+	return nil
+}
+
+// migrateProjectFilesTable 为已有库创建项目工作空间文件索引表。
+func (db *DB) migrateProjectFilesTable() error {
+	ddl := `
+	CREATE TABLE IF NOT EXISTS project_files (
+		id TEXT PRIMARY KEY,
+		project_id TEXT NOT NULL,
+		original_name TEXT NOT NULL,
+		stored_name TEXT NOT NULL,
+		rel_path TEXT NOT NULL,
+		abs_path TEXT NOT NULL,
+		file_type TEXT NOT NULL DEFAULT 'attachments',
+		purpose TEXT NOT NULL DEFAULT '',
+		mime_type TEXT NOT NULL DEFAULT '',
+		size_bytes INTEGER NOT NULL DEFAULT 0,
+		sha256 TEXT NOT NULL DEFAULT '',
+		source TEXT NOT NULL DEFAULT 'upload',
+		note TEXT NOT NULL DEFAULT '',
+		created_at DATETIME NOT NULL,
+		updated_at DATETIME NOT NULL,
+		FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+		UNIQUE(project_id, rel_path)
+	);`
+	if _, err := db.Exec(ddl); err != nil {
+		return err
+	}
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_project_files_project_id ON project_files(project_id)`)
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_project_files_file_type ON project_files(file_type)`)
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_project_files_rel_path ON project_files(project_id, rel_path)`)
 	return nil
 }
 

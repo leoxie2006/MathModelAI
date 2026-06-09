@@ -57,13 +57,32 @@ type ProjectFact struct {
 	UpdatedAt              time.Time `json:"updated_at"`
 }
 
+// ProjectFile 项目工作空间文件索引。
+type ProjectFile struct {
+	ID           string    `json:"id"`
+	ProjectID    string    `json:"project_id"`
+	OriginalName string    `json:"original_name"`
+	StoredName   string    `json:"stored_name"`
+	RelPath      string    `json:"rel_path"`
+	AbsPath      string    `json:"abs_path"`
+	FileType     string    `json:"file_type"`
+	Purpose      string    `json:"purpose,omitempty"`
+	MimeType     string    `json:"mime_type,omitempty"`
+	SizeBytes    int64     `json:"size_bytes"`
+	SHA256       string    `json:"sha256,omitempty"`
+	Source       string    `json:"source"`
+	Note         string    `json:"note,omitempty"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
 // ProjectFactListFilter 事实列表筛选。
 type ProjectFactListFilter struct {
-	Category                string
-	Confidence              string
-	Search                  string
-	RelatedVulnerabilityID  string
-	ExcludeDeprecated       bool // 为 true 时排除 confidence=deprecated
+	Category               string
+	Confidence             string
+	Search                 string
+	RelatedVulnerabilityID string
+	ExcludeDeprecated      bool // 为 true 时排除 confidence=deprecated
 }
 
 // CreateProject 创建项目。
@@ -207,6 +226,129 @@ func (db *DB) SetConversationProjectID(conversationID, projectID string) error {
 	_, err := db.Exec(`UPDATE conversations SET project_id = ?, updated_at = ? WHERE id = ?`, val, time.Now(), conversationID)
 	if err != nil {
 		return fmt.Errorf("设置对话项目失败: %w", err)
+	}
+	return nil
+}
+
+// UpsertProjectFile 按 project_id + rel_path 创建或更新项目文件索引。
+func (db *DB) UpsertProjectFile(f *ProjectFile) (*ProjectFile, error) {
+	if strings.TrimSpace(f.ProjectID) == "" {
+		return nil, fmt.Errorf("project_id 不能为空")
+	}
+	if strings.TrimSpace(f.RelPath) == "" {
+		return nil, fmt.Errorf("rel_path 不能为空")
+	}
+	if strings.TrimSpace(f.OriginalName) == "" {
+		f.OriginalName = f.StoredName
+	}
+	if strings.TrimSpace(f.StoredName) == "" {
+		f.StoredName = f.OriginalName
+	}
+	if strings.TrimSpace(f.FileType) == "" {
+		f.FileType = "attachments"
+	}
+	if strings.TrimSpace(f.Source) == "" {
+		f.Source = "upload"
+	}
+	now := time.Now()
+	existing, err := db.GetProjectFileByRelPath(f.ProjectID, f.RelPath)
+	if err == nil && existing != nil {
+		f.ID = existing.ID
+		f.CreatedAt = existing.CreatedAt
+		f.UpdatedAt = now
+		_, err = db.Exec(
+			`UPDATE project_files SET original_name = ?, stored_name = ?, abs_path = ?, file_type = ?,
+				purpose = ?, mime_type = ?, size_bytes = ?, sha256 = ?, source = ?, note = ?, updated_at = ?
+			 WHERE id = ?`,
+			f.OriginalName, f.StoredName, f.AbsPath, f.FileType,
+			f.Purpose, f.MimeType, f.SizeBytes, f.SHA256, f.Source, f.Note, f.UpdatedAt, f.ID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("更新项目文件索引失败: %w", err)
+		}
+		return f, nil
+	}
+	if f.ID == "" {
+		f.ID = uuid.New().String()
+	}
+	f.CreatedAt = now
+	f.UpdatedAt = now
+	_, err = db.Exec(
+		`INSERT INTO project_files (
+			id, project_id, original_name, stored_name, rel_path, abs_path, file_type,
+			purpose, mime_type, size_bytes, sha256, source, note, created_at, updated_at
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		f.ID, f.ProjectID, f.OriginalName, f.StoredName, f.RelPath, f.AbsPath, f.FileType,
+		f.Purpose, f.MimeType, f.SizeBytes, f.SHA256, f.Source, f.Note, f.CreatedAt, f.UpdatedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("创建项目文件索引失败: %w", err)
+	}
+	return f, nil
+}
+
+// ListProjectFiles 列出项目工作空间文件。
+func (db *DB) ListProjectFiles(projectID, fileType string, limit, offset int) ([]*ProjectFile, error) {
+	if limit <= 0 {
+		limit = 200
+	}
+	query := `SELECT id, project_id, original_name, stored_name, rel_path, abs_path, file_type,
+		COALESCE(purpose,''), COALESCE(mime_type,''), size_bytes, COALESCE(sha256,''), source, COALESCE(note,''), created_at, updated_at
+		FROM project_files WHERE project_id = ?`
+	args := []interface{}{projectID}
+	if t := strings.TrimSpace(fileType); t != "" {
+		query += " AND file_type = ?"
+		args = append(args, t)
+	}
+	query += " ORDER BY updated_at DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("列出项目文件失败: %w", err)
+	}
+	defer rows.Close()
+	var out []*ProjectFile
+	for rows.Next() {
+		f, err := scanProjectFileFromRows(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, f)
+	}
+	return out, rows.Err()
+}
+
+// GetProjectFile 按 ID 获取项目文件。
+func (db *DB) GetProjectFile(projectID, fileID string) (*ProjectFile, error) {
+	row := db.QueryRow(
+		`SELECT id, project_id, original_name, stored_name, rel_path, abs_path, file_type,
+			COALESCE(purpose,''), COALESCE(mime_type,''), size_bytes, COALESCE(sha256,''), source, COALESCE(note,''), created_at, updated_at
+		 FROM project_files WHERE project_id = ? AND id = ?`,
+		projectID, fileID,
+	)
+	return scanProjectFileRow(row)
+}
+
+// GetProjectFileByRelPath 按相对路径获取项目文件。
+func (db *DB) GetProjectFileByRelPath(projectID, relPath string) (*ProjectFile, error) {
+	row := db.QueryRow(
+		`SELECT id, project_id, original_name, stored_name, rel_path, abs_path, file_type,
+			COALESCE(purpose,''), COALESCE(mime_type,''), size_bytes, COALESCE(sha256,''), source, COALESCE(note,''), created_at, updated_at
+		 FROM project_files WHERE project_id = ? AND rel_path = ?`,
+		projectID, relPath,
+	)
+	return scanProjectFileRow(row)
+}
+
+// DeleteProjectFile 删除项目文件索引。
+func (db *DB) DeleteProjectFile(projectID, fileID string) error {
+	res, err := db.Exec(`DELETE FROM project_files WHERE project_id = ? AND id = ?`, projectID, fileID)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return fmt.Errorf("项目文件不存在")
 	}
 	return nil
 }
@@ -467,6 +609,39 @@ func scanProjectFactFromRows(rows *sql.Rows) (*ProjectFact, error) {
 		return nil, err
 	}
 	f.Pinned = pinned != 0
+	f.CreatedAt = parseDBTime(createdAt)
+	f.UpdatedAt = parseDBTime(updatedAt)
+	return &f, nil
+}
+
+func scanProjectFileRow(row *sql.Row) (*ProjectFile, error) {
+	var f ProjectFile
+	var createdAt, updatedAt string
+	err := row.Scan(
+		&f.ID, &f.ProjectID, &f.OriginalName, &f.StoredName, &f.RelPath, &f.AbsPath, &f.FileType,
+		&f.Purpose, &f.MimeType, &f.SizeBytes, &f.SHA256, &f.Source, &f.Note, &createdAt, &updatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("项目文件不存在")
+		}
+		return nil, err
+	}
+	f.CreatedAt = parseDBTime(createdAt)
+	f.UpdatedAt = parseDBTime(updatedAt)
+	return &f, nil
+}
+
+func scanProjectFileFromRows(rows *sql.Rows) (*ProjectFile, error) {
+	var f ProjectFile
+	var createdAt, updatedAt string
+	err := rows.Scan(
+		&f.ID, &f.ProjectID, &f.OriginalName, &f.StoredName, &f.RelPath, &f.AbsPath, &f.FileType,
+		&f.Purpose, &f.MimeType, &f.SizeBytes, &f.SHA256, &f.Source, &f.Note, &createdAt, &updatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
 	f.CreatedAt = parseDBTime(createdAt)
 	f.UpdatedAt = parseDBTime(updatedAt)
 	return &f, nil

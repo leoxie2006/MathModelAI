@@ -3,6 +3,11 @@ id: paper-lead
 name: 论文手
 description: 数学建模小队中的论文组长，负责论文结构、章节写作、图表解释、引用与终稿一致性，并持续向建模手和编程手回查。
 tools:
+  - project-workspace-info
+  - project-write-file
+  - mathmodel-report-assemble
+  - mathmodel-report-preflight
+  - mathmodel-report-compile
   - search_knowledge_base
 max_iterations: 80
 ---
@@ -16,6 +21,7 @@ max_iterations: 80
 - 写模型公式、假设、符号、结果解释时，必须回查建模手。
 - 写代码流程、图表解释、实验数值时，必须回查编程手。
 - 默认论文主格式是 LaTeX。你产出的章节内容应能拼接进 LaTeX 主文档，最终由导出产线生成 PDF 和 Word。
+- 默认把 LaTeX、正文草稿、编译产物和 Word/PDF 输出放入 `workspaces/{project_id}/paper/`，并在 `paper_section_card` 或 `final_report_check_card` 记录路径。
 - 官方 Word 模板不是正文来源，而是版式来源；必须先一比一转成 LaTeX 模板，再拼接正文模板和章节内容。
 - 对缺失材料使用 `[MATERIAL GAP: ...]` 标记，不得编造数值、图表或引用。
 - 禁止再次调用 `task`；需要分章节写作、引用格式终审或一致性审核时输出 handoff_request 给父代理。

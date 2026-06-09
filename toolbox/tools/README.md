@@ -12,6 +12,9 @@
 - `mathmodel-gm11.yaml`：调用 `mathmodel-toolkit gm11`，输出灰色预测结果和卡片。
 - `mathmodel-exponential-smoothing.yaml`：调用 `mathmodel-toolkit exponential-smoothing`，输出指数平滑预测和卡片。
 - `mathmodel-monte-carlo.yaml`：调用 `mathmodel-toolkit monte-carlo`，输出仿真统计、可行率和卡片。
+- `project-workspace-info.yaml`：查看项目工作空间目录和已生成文件。
+- `project-write-file.yaml`：把脚本、配置、LaTeX、Markdown 卡片等文本写入项目工作空间。
+- `project-run-python.yaml`：在项目工作空间运行 Python，输出到 `outputs/`。
 - `mathmodel-run-python.yaml`：运行 Python 建模脚本，输出 notebook、复现命令、`code_card` 和 `result_card`。
 - `mathmodel-review-code.yaml`：检查数据泄露、指标、边界条件、随机种子和图表一致性。
 - `mathmodel-structure-results.yaml`：把原始结果整理成 `result_card`、`figure_card` 和论文素材。

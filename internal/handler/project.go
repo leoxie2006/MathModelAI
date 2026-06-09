@@ -14,13 +14,14 @@ import (
 
 // ProjectHandler 项目管理处理器。
 type ProjectHandler struct {
-	db     *database.DB
-	logger *zap.Logger
+	db            *database.DB
+	logger        *zap.Logger
+	workspaceRoot string
 }
 
 // NewProjectHandler 创建项目管理处理器。
 func NewProjectHandler(db *database.DB, logger *zap.Logger) *ProjectHandler {
-	return &ProjectHandler{db: db, logger: logger}
+	return &ProjectHandler{db: db, logger: logger, workspaceRoot: defaultProjectWorkspaceRoot()}
 }
 
 type createProjectRequest struct {
@@ -168,10 +169,12 @@ func (h *ProjectHandler) UpdateProject(c *gin.Context) {
 
 // DeleteProject DELETE /api/projects/:id
 func (h *ProjectHandler) DeleteProject(c *gin.Context) {
-	if err := h.db.DeleteProject(c.Param("id")); err != nil {
+	projectID := c.Param("id")
+	if err := h.db.DeleteProject(projectID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	h.removeProjectWorkspace(projectID)
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 

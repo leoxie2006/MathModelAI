@@ -6,6 +6,7 @@
 - `methods/`：常用数学建模方法模板，已覆盖优化、预测、评价、仿真四类 21 张方法卡。
 - `cli/`：稳定 CLI 入口，当前提供 `mathmodel-toolkit` 的评价、线性规划、回归、GM(1,1)、指数平滑、蒙特卡洛，以及 `mathmodel-pipeline` 的执行、审核、整理和验证流程。
 - `report/`：论文输出产线，包括官方 Word 模板转 LaTeX、正文模板拼接、PDF 编译和 Word 导出。
+- `../workspaces/{project_id}/`：运行时项目工作空间，按 attachments、data、code、outputs、paper、cards 存放附件、脚本、结果和论文产物。
 
 ## 设计原则
 
@@ -23,4 +24,5 @@ toolbox/
   cli/                   # mathmodel-toolkit CLI
   examples/              # CLI 示例数据
   report/                # LaTeX/Word/PDF 输出产线
+  ../workspaces/          # 每个建模项目的运行时文件空间（git 忽略）
 ```

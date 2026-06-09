@@ -1,0 +1,62 @@
+name: "project-run-python"
+command: "/bin/bash"
+args:
+  - "-c"
+  - |
+    set -euo pipefail
+    ROOT="${MATHMODEL_ROOT:-$(pwd)}"
+    PROJECT_ID="$1"
+    SCRIPT_REL="${2:-}"
+    CODE="${3:-}"
+    RUN_ID="${4:-}"
+    TIMEOUT="${5:-300}"
+    WORKSPACE="$ROOT/workspaces/$PROJECT_ID"
+    mkdir -p "$WORKSPACE/code" "$WORKSPACE/outputs"
+    OUTPUT="$WORKSPACE/outputs"
+    if [ -n "$RUN_ID" ]; then OUTPUT="$OUTPUT/$RUN_ID"; fi
+    SCRIPT=""
+    if [ -n "$SCRIPT_REL" ]; then SCRIPT="$WORKSPACE/$SCRIPT_REL"; fi
+    CMD=(python3 "$ROOT/toolbox/cli/mathmodel_pipeline.py" run --workspace "$WORKSPACE" --output "$OUTPUT" --cwd "$WORKSPACE/code" --timeout "$TIMEOUT")
+    if [ -n "$SCRIPT" ]; then CMD+=(--script "$SCRIPT"); fi
+    if [ -n "$CODE" ]; then CMD+=(--code "$CODE"); fi
+    "${CMD[@]}"
+  - "_"
+enabled: true
+short_description: "在项目工作空间运行 Python 并保存结果"
+description: |
+  在 workspaces/{project_id}/ 内运行 Python 脚本或内联代码，输出 notebook、execution.json、result.json、code_card.md、result_card.md 到 outputs/。
+parameters:
+  - name: "project_id"
+    type: "string"
+    description: "项目 ID。"
+    required: true
+    position: 0
+    format: "positional"
+  - name: "script_rel_path"
+    type: "string"
+    description: "可选，项目工作空间内脚本相对路径，例如 code/problem1.py。"
+    required: false
+    default: ""
+    position: 1
+    format: "positional"
+  - name: "code"
+    type: "string"
+    description: "可选内联 Python 代码；script_rel_path 和 code 至少提供一个。"
+    required: false
+    default: ""
+    position: 2
+    format: "positional"
+  - name: "run_id"
+    type: "string"
+    description: "可选输出子目录名，默认直接写入 outputs。"
+    required: false
+    default: ""
+    position: 3
+    format: "positional"
+  - name: "timeout"
+    type: "string"
+    description: "超时时间秒数，默认 300。"
+    required: false
+    default: "300"
+    position: 4
+    format: "positional"

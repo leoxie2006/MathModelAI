@@ -610,6 +610,7 @@
                                 </header>
                                 <nav class="projects-tabs" role="tablist">
                                     <button type="button" id="project-tab-facts" class="projects-tab is-active" role="tab" onclick="switchProjectTab('facts')" data-i18n="projects.tabFacts">建模黑板</button>
+                                    <button type="button" id="project-tab-files" class="projects-tab" role="tab" onclick="switchProjectTab('files')">工作空间</button>
                                     <button type="button" id="project-tab-workflow" class="projects-tab" role="tab" onclick="switchProjectTab('workflow')">协作状态</button>
                                     <button type="button" id="project-tab-checkpoints" class="projects-tab" role="tab" onclick="switchProjectTab('checkpoints')">Checkpoint</button>
                                     <button type="button" id="project-tab-conversations" class="projects-tab" role="tab" onclick="switchProjectTab('conversations')" data-i18n="projects.tabConversations">关联对话</button>
@@ -673,6 +674,36 @@
                                         <table class="data-table data-table--projects">
                                             <thead><tr><th>Key</th><th data-i18n="projects.category">分类</th><th data-i18n="projects.summary">摘要</th><th>Body</th><th data-i18n="projects.confidence">置信度</th><th data-i18n="projects.updated">更新</th><th class="col-actions" data-i18n="common.actions">操作</th></tr></thead>
                                             <tbody id="project-facts-tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="project-panel-files" class="projects-panel projects-files-panel" role="tabpanel" hidden>
+                                    <div class="projects-panel-toolbar projects-files-toolbar">
+                                        <div class="projects-file-upload">
+                                            <label class="projects-file-type-select">
+                                                <span>文件类型</span>
+                                                <select id="project-file-type">
+                                                    <option value="attachments">题面/原始附件</option>
+                                                    <option value="data">数据/清洗结果</option>
+                                                    <option value="code">脚本/Notebook</option>
+                                                    <option value="outputs">结果/图表/日志</option>
+                                                    <option value="paper">论文/模板</option>
+                                                    <option value="cards">卡片/材料</option>
+                                                </select>
+                                            </label>
+                                            <input type="file" id="project-file-input" multiple>
+                                            <button type="button" class="btn-primary btn-small" onclick="uploadProjectFiles()">上传</button>
+                                        </div>
+                                        <div class="projects-file-actions">
+                                            <button type="button" class="btn-secondary btn-small" onclick="scanProjectWorkspace()">扫描工作区</button>
+                                            <button type="button" class="btn-secondary btn-small" onclick="loadProjectFiles()">刷新</button>
+                                        </div>
+                                    </div>
+                                    <div class="projects-workspace-root" id="project-workspace-root"></div>
+                                    <div class="projects-table-wrap">
+                                        <table class="data-table data-table--projects">
+                                            <thead><tr><th>类型</th><th>文件</th><th>大小</th><th>路径</th><th>更新</th><th class="col-actions">操作</th></tr></thead>
+                                            <tbody id="project-files-tbody"></tbody>
                                         </table>
                                     </div>
                                 </div>
