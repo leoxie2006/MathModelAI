@@ -1215,6 +1215,14 @@ func updateOpenAIConfig(doc *yaml.Node, cfg config.OpenAIConfig) {
 	setStringInMap(oaNode, "api_key", cfg.APIKey)
 	setStringInMap(oaNode, "model", cfg.Model)
 	setIntInMap(oaNode, "max_total_tokens", cfg.MaxTotalTokens)
+
+	reasoningNode := ensureMap(oaNode, "reasoning")
+	setStringInMap(reasoningNode, "mode", cfg.Reasoning.Mode)
+	setStringInMap(reasoningNode, "effort", cfg.Reasoning.Effort)
+	setStringInMap(reasoningNode, "profile", cfg.Reasoning.Profile)
+	if cfg.Reasoning.AllowClientReasoning != nil {
+		setBoolInMap(reasoningNode, "allow_client_reasoning", *cfg.Reasoning.AllowClientReasoning)
+	}
 }
 
 func updateKnowledgeConfig(doc *yaml.Node, cfg config.KnowledgeConfig) {

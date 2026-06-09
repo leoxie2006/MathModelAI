@@ -65,6 +65,18 @@ function fillConfigForm(config) {
         if (modelEl) modelEl.value = config.openai.model || '';
         const providerEl = document.getElementById('openai-provider');
         if (providerEl) providerEl.value = config.openai.provider || 'openai';
+        const maxTokensEl = document.getElementById('openai-max-total-tokens');
+        if (maxTokensEl) maxTokensEl.value = config.openai.max_total_tokens || 120000;
+
+        const reasoning = config.openai.reasoning || {};
+        const reasoningModeEl = document.getElementById('openai-reasoning-mode');
+        if (reasoningModeEl) reasoningModeEl.value = reasoning.mode || 'auto';
+        const reasoningEffortEl = document.getElementById('openai-reasoning-effort');
+        if (reasoningEffortEl) reasoningEffortEl.value = reasoning.effort || '';
+        const reasoningProfileEl = document.getElementById('openai-reasoning-profile');
+        if (reasoningProfileEl) reasoningProfileEl.value = reasoning.profile || 'auto';
+        const allowClientEl = document.getElementById('openai-reasoning-allow-client');
+        if (allowClientEl) allowClientEl.checked = reasoning.allow_client_reasoning !== false;
     }
 
     // Agent 配置
@@ -119,19 +131,33 @@ async function applySettings() {
     const update = {};
 
     // OpenAI
-    const openaiBaseUrl = document.getElementById('openai-base-url')?.value?.trim();
-    const openaiApiKey = document.getElementById('openai-api-key')?.value?.trim();
-    const openaiModel = document.getElementById('openai-model')?.value?.trim();
-    const openaiProvider = document.getElementById('openai-provider')?.value;
-    if (openaiBaseUrl || openaiApiKey || openaiModel) {
-        update.openai = {
-            ...(currentConfig.openai || {}),
-            base_url: openaiBaseUrl,
-            api_key: openaiApiKey,
-            model: openaiModel,
-            provider: openaiProvider,
-        };
-    }
+    const currentOpenAI = currentConfig.openai || {};
+    const currentReasoning = currentOpenAI.reasoning || {};
+    const openaiBaseUrl = document.getElementById('openai-base-url')?.value?.trim() || '';
+    const openaiApiKey = document.getElementById('openai-api-key')?.value?.trim() || '';
+    const openaiModel = document.getElementById('openai-model')?.value?.trim() || '';
+    const openaiProvider = document.getElementById('openai-provider')?.value || currentOpenAI.provider || 'openai';
+    const maxTokens = parseInt(document.getElementById('openai-max-total-tokens')?.value, 10);
+    const reasoningMode = document.getElementById('openai-reasoning-mode')?.value || currentReasoning.mode || 'auto';
+    const reasoningEffort = document.getElementById('openai-reasoning-effort')?.value || '';
+    const reasoningProfile = document.getElementById('openai-reasoning-profile')?.value || currentReasoning.profile || 'auto';
+    const allowClientEl = document.getElementById('openai-reasoning-allow-client');
+    const allowClientReasoning = allowClientEl ? allowClientEl.checked : currentReasoning.allow_client_reasoning !== false;
+    update.openai = {
+        ...currentOpenAI,
+        base_url: openaiBaseUrl,
+        api_key: openaiApiKey,
+        model: openaiModel,
+        provider: openaiProvider,
+        max_total_tokens: isNaN(maxTokens) ? (currentOpenAI.max_total_tokens || 120000) : maxTokens,
+        reasoning: {
+            ...currentReasoning,
+            mode: reasoningMode,
+            effort: reasoningEffort,
+            profile: reasoningProfile,
+            allow_client_reasoning: allowClientReasoning,
+        },
+    };
 
     // Agent
     const maxIter = parseInt(document.getElementById('agent-max-iterations')?.value, 10);
@@ -147,37 +173,54 @@ async function applySettings() {
     const mcpEnabled = document.getElementById('mcp-enabled')?.checked;
     const mcpHost = document.getElementById('mcp-host')?.value?.trim();
     const mcpPort = parseInt(document.getElementById('mcp-port')?.value, 10);
+    const currentMCP = currentConfig.mcp || {};
     update.mcp = {
-        enabled: !!mcpEnabled,
-        host: mcpHost || '0.0.0.0',
-        port: isNaN(mcpPort) ? 8081 : mcpPort,
+        ...currentMCP,
+        enabled: typeof mcpEnabled === 'boolean' ? mcpEnabled : !!currentMCP.enabled,
+        host: mcpHost || currentMCP.host || '0.0.0.0',
+        port: isNaN(mcpPort) ? (currentMCP.port || 8081) : mcpPort,
     };
 
     // 知识库
     const kEnabled = document.getElementById('knowledge-enabled')?.checked;
     const kBase = document.getElementById('knowledge-base-path')?.value?.trim();
+    const currentKnowledge = currentConfig.knowledge || {};
     update.knowledge = {
-        enabled: !!kEnabled,
-        base_path: kBase || 'knowledge_base',
+        ...currentKnowledge,
+        enabled: typeof kEnabled === 'boolean' ? kEnabled : !!currentKnowledge.enabled,
+        base_path: kBase || currentKnowledge.base_path || 'knowledge_base',
     };
 
     // 多代理
+    const currentMultiAgent = currentConfig.multi_agent || {};
     update.multi_agent = {
         enabled: true,
         robot_default_agent_mode: 'deep',
+        batch_use_multi_agent: !!currentMultiAgent.batch_use_multi_agent,
+        plan_execute_loop_max_iterations: currentMultiAgent.plan_execute_loop_max_iterations,
+        tool_search_always_visible_tools: currentMultiAgent.tool_search_always_visible_tools,
     };
 
     try {
+        const saveResponse = await apiFetch('/api/config', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(update),
+        });
+        if (!saveResponse.ok) {
+            const err = await saveResponse.json().catch(() => ({}));
+            throw new Error(err.error || '保存配置失败: ' + saveResponse.status);
+        }
+
         const response = await apiFetch('/api/config/apply', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(update),
         });
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
             throw new Error(err.error || '应用配置失败: ' + response.status);
         }
-        showNotification('配置已应用', 'success');
+        showNotification('配置已保存并应用', 'success');
         await loadConfig();
     } catch (error) {
         console.error('应用配置失败:', error);
@@ -190,6 +233,7 @@ async function testOpenAI() {
     const openaiBaseUrl = document.getElementById('openai-base-url')?.value?.trim();
     const openaiApiKey = document.getElementById('openai-api-key')?.value?.trim();
     const openaiModel = document.getElementById('openai-model')?.value?.trim();
+    const openaiProvider = document.getElementById('openai-provider')?.value || 'openai';
     if (!openaiBaseUrl || !openaiApiKey || !openaiModel) {
         showNotification('请填写 OpenAI base_url、api_key 和 model', 'error');
         return;
@@ -199,11 +243,14 @@ async function testOpenAI() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                openai: { base_url: openaiBaseUrl, api_key: openaiApiKey, model: openaiModel },
+                provider: openaiProvider,
+                base_url: openaiBaseUrl,
+                api_key: openaiApiKey,
+                model: openaiModel,
             }),
         });
         const data = await response.json();
-        if (response.ok && data.ok) {
+        if (response.ok && data.success) {
             showNotification('OpenAI 连接成功', 'success');
         } else {
             showNotification('OpenAI 连接失败: ' + (data.error || response.status), 'error');
@@ -640,6 +687,7 @@ function switchSettingsSection(section) {
 window.switchSettingsSection = switchSettingsSection;
 window.applySettings = applySettings;
 window.testOpenAI = testOpenAI;
+window.testOpenAIConnection = testOpenAI;
 window.loadToolsList = loadToolsList;
 window.saveToolsConfig = saveToolsConfig;
 window.selectAllTools = selectAllTools;
