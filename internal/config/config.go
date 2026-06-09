@@ -449,11 +449,11 @@ type LogConfig struct {
 }
 
 type MCPConfig struct {
-	Enabled         bool   `yaml:"enabled"`
-	Host            string `yaml:"host"`
-	Port            int    `yaml:"port"`
-	AuthHeader      string `yaml:"auth_header,omitempty"`       // 鉴权 header 名，留空表示不鉴权
-	AuthHeaderValue string `yaml:"auth_header_value,omitempty"` // 鉴权 header 值，需与请求中该 header 一致
+	Enabled         bool   `yaml:"enabled" json:"enabled"`
+	Host            string `yaml:"host" json:"host"`
+	Port            int    `yaml:"port" json:"port"`
+	AuthHeader      string `yaml:"auth_header,omitempty" json:"auth_header,omitempty"`             // 鉴权 header 名，留空表示不鉴权
+	AuthHeaderValue string `yaml:"auth_header_value,omitempty" json:"auth_header_value,omitempty"` // 鉴权 header 值，需与请求中该 header 一致
 }
 
 type OpenAIConfig struct {

@@ -838,7 +838,8 @@ func setupRoutes(
 		if version == "" {
 			version = "v1.0.0"
 		}
-		c.HTML(http.StatusOK, "index.html", gin.H{"Version": version})
+		assetVersion := fmt.Sprintf("%s-%d", version, time.Now().Unix())
+		c.HTML(http.StatusOK, "index.html", gin.H{"Version": version, "AssetVersion": assetVersion})
 	})
 }
 

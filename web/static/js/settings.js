@@ -30,6 +30,8 @@ let toolsPagination = {
 let toolsCurrentSearch = '';
 let toolsCurrentStatusFilter = '';
 let externalMCPEditingName = null;
+let settingsLoadSeq = 0;
+let settingsFormDirty = false;
 
 /** 数学建模工作台固定使用 Deep 多代理编排。 */
 function syncMultiAgentModeSelectOptions(multiEnabled) {
@@ -38,18 +40,85 @@ function syncMultiAgentModeSelectOptions(multiEnabled) {
     sel.value = 'deep';
 }
 
+function getTrimmedValue(id, fallback = '') {
+    const el = document.getElementById(id);
+    if (!el || typeof el.value !== 'string') return fallback;
+    return el.value.trim();
+}
+
+function getIntValue(id, fallback) {
+    const raw = getTrimmedValue(id, '');
+    const n = parseInt(raw, 10);
+    return isNaN(n) ? fallback : n;
+}
+
+function getFloatValue(id, fallback) {
+    const raw = getTrimmedValue(id, '');
+    const n = parseFloat(raw);
+    return isNaN(n) ? fallback : n;
+}
+
+function getCheckedValue(id, fallback = false) {
+    const el = document.getElementById(id);
+    return el ? !!el.checked : fallback;
+}
+
+function setValue(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = value ?? '';
+}
+
+function setChecked(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.checked = !!value;
+}
+
+function csvToList(value) {
+    return String(value || '')
+        .split(',')
+        .map(v => v.trim())
+        .filter(Boolean);
+}
+
+function listToCsv(value) {
+    return Array.isArray(value) ? value.join(', ') : '';
+}
+
+function markSettingsDirty(event) {
+    if (!event || !event.target || typeof event.target.closest !== 'function') return;
+    if (event.target.closest('#page-settings')) {
+        settingsFormDirty = true;
+    }
+}
+
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('input', markSettingsDirty, true);
+    document.addEventListener('change', markSettingsDirty, true);
+}
+
 // 加载配置并填充表单
-async function loadConfig() {
+async function loadConfig(options = {}) {
+    const requestSeq = ++settingsLoadSeq;
+    const forceFill = !!(options && options.forceFill);
     try {
         const response = await apiFetch('/api/config');
         if (!response.ok) {
             throw new Error('加载配置失败: ' + response.status);
         }
-        currentConfig = await response.json();
-        fillConfigForm(currentConfig);
+        const config = await response.json();
+        if (requestSeq !== settingsLoadSeq) {
+            return currentConfig;
+        }
+        currentConfig = config;
+        if (forceFill || !settingsFormDirty) {
+            fillConfigForm(currentConfig);
+            settingsFormDirty = false;
+        }
+        return currentConfig;
     } catch (error) {
         console.error('加载配置失败:', error);
         showNotification('加载配置失败: ' + error.message, 'error');
+        return null;
     }
 }
 
@@ -89,20 +158,42 @@ function fillConfigForm(config) {
 
     // MCP 配置
     if (config.mcp) {
-        const mcpEnabledEl = document.getElementById('mcp-enabled');
-        if (mcpEnabledEl) mcpEnabledEl.checked = config.mcp.enabled || false;
-        const mcpHostEl = document.getElementById('mcp-host');
-        if (mcpHostEl) mcpHostEl.value = config.mcp.host || '0.0.0.0';
-        const mcpPortEl = document.getElementById('mcp-port');
-        if (mcpPortEl) mcpPortEl.value = config.mcp.port || 8081;
+        setChecked('mcp-enabled', config.mcp.enabled || false);
+        setValue('mcp-host', config.mcp.host || '0.0.0.0');
+        setValue('mcp-port', config.mcp.port || 8081);
     }
 
     // 知识库配置
     if (config.knowledge) {
-        const kEnabledEl = document.getElementById('knowledge-enabled');
-        if (kEnabledEl) kEnabledEl.checked = config.knowledge.enabled || false;
-        const kBaseEl = document.getElementById('knowledge-base-path');
-        if (kBaseEl) kBaseEl.value = config.knowledge.base_path || 'knowledge_base';
+        const embedding = config.knowledge.embedding || {};
+        const retrieval = config.knowledge.retrieval || {};
+        const postRetrieve = retrieval.post_retrieve || {};
+        const indexing = config.knowledge.indexing || {};
+
+        setChecked('knowledge-enabled', config.knowledge.enabled || false);
+        setValue('knowledge-base-path', config.knowledge.base_path || 'knowledge_base');
+        setValue('knowledge-embedding-provider', embedding.provider || 'openai');
+        setValue('knowledge-embedding-base-url', embedding.base_url || '');
+        setValue('knowledge-embedding-api-key', embedding.api_key || '');
+        setValue('knowledge-embedding-model', embedding.model || 'text-embedding-v4');
+        setValue('knowledge-retrieval-top-k', retrieval.top_k || 5);
+        setValue('knowledge-retrieval-similarity-threshold', retrieval.similarity_threshold ?? 0.4);
+        setValue('knowledge-retrieval-sub-index-filter', retrieval.sub_index_filter || '');
+        setValue('knowledge-post-retrieve-prefetch-top-k', postRetrieve.prefetch_top_k || 0);
+        setValue('knowledge-post-retrieve-max-chars', postRetrieve.max_context_chars || 0);
+        setValue('knowledge-post-retrieve-max-tokens', postRetrieve.max_context_tokens || 0);
+        setValue('knowledge-indexing-chunk-strategy', indexing.chunk_strategy || 'markdown_then_recursive');
+        setValue('knowledge-indexing-request-timeout', indexing.request_timeout_seconds || 120);
+        setValue('knowledge-indexing-batch-size', indexing.batch_size || 64);
+        setChecked('knowledge-indexing-prefer-source-file', indexing.prefer_source_file || false);
+        setValue('knowledge-indexing-sub-indexes', listToCsv(indexing.sub_indexes));
+        setValue('knowledge-indexing-chunk-size', indexing.chunk_size || 512);
+        setValue('knowledge-indexing-chunk-overlap', indexing.chunk_overlap || 50);
+        setValue('knowledge-indexing-max-chunks-per-item', indexing.max_chunks_per_item || 0);
+        setValue('knowledge-indexing-max-rpm', indexing.max_rpm || 0);
+        setValue('knowledge-indexing-rate-limit-delay-ms', indexing.rate_limit_delay_ms || 300);
+        setValue('knowledge-indexing-max-retries', indexing.max_retries || 3);
+        setValue('knowledge-indexing-retry-delay-ms', indexing.retry_delay_ms || 1000);
     }
 
     // 多代理
@@ -124,8 +215,11 @@ function fillConfigForm(config) {
 // 应用配置
 async function applySettings() {
     if (!currentConfig) {
-        showNotification('请先加载配置', 'error');
-        return;
+        await loadConfig();
+        if (!currentConfig) {
+            showNotification('配置尚未加载完成，请稍后再试', 'error');
+            return;
+        }
     }
 
     const update = {};
@@ -133,23 +227,22 @@ async function applySettings() {
     // OpenAI
     const currentOpenAI = currentConfig.openai || {};
     const currentReasoning = currentOpenAI.reasoning || {};
-    const openaiBaseUrl = document.getElementById('openai-base-url')?.value?.trim() || '';
-    const openaiApiKey = document.getElementById('openai-api-key')?.value?.trim() || '';
-    const openaiModel = document.getElementById('openai-model')?.value?.trim() || '';
-    const openaiProvider = document.getElementById('openai-provider')?.value || currentOpenAI.provider || 'openai';
-    const maxTokens = parseInt(document.getElementById('openai-max-total-tokens')?.value, 10);
-    const reasoningMode = document.getElementById('openai-reasoning-mode')?.value || currentReasoning.mode || 'auto';
-    const reasoningEffort = document.getElementById('openai-reasoning-effort')?.value || '';
-    const reasoningProfile = document.getElementById('openai-reasoning-profile')?.value || currentReasoning.profile || 'auto';
-    const allowClientEl = document.getElementById('openai-reasoning-allow-client');
-    const allowClientReasoning = allowClientEl ? allowClientEl.checked : currentReasoning.allow_client_reasoning !== false;
+    const openaiBaseUrl = getTrimmedValue('openai-base-url', '');
+    const openaiApiKey = getTrimmedValue('openai-api-key', '');
+    const openaiModel = getTrimmedValue('openai-model', '');
+    const openaiProvider = getTrimmedValue('openai-provider', currentOpenAI.provider || 'openai') || currentOpenAI.provider || 'openai';
+    const maxTokens = getIntValue('openai-max-total-tokens', currentOpenAI.max_total_tokens || 120000);
+    const reasoningMode = getTrimmedValue('openai-reasoning-mode', currentReasoning.mode || 'auto') || currentReasoning.mode || 'auto';
+    const reasoningEffort = getTrimmedValue('openai-reasoning-effort', '');
+    const reasoningProfile = getTrimmedValue('openai-reasoning-profile', currentReasoning.profile || 'auto') || currentReasoning.profile || 'auto';
+    const allowClientReasoning = getCheckedValue('openai-reasoning-allow-client', currentReasoning.allow_client_reasoning !== false);
     update.openai = {
         ...currentOpenAI,
         base_url: openaiBaseUrl,
         api_key: openaiApiKey,
         model: openaiModel,
         provider: openaiProvider,
-        max_total_tokens: isNaN(maxTokens) ? (currentOpenAI.max_total_tokens || 120000) : maxTokens,
+        max_total_tokens: maxTokens,
         reasoning: {
             ...currentReasoning,
             mode: reasoningMode,
@@ -160,8 +253,8 @@ async function applySettings() {
     };
 
     // Agent
-    const maxIter = parseInt(document.getElementById('agent-max-iterations')?.value, 10);
-    const timeout = parseInt(document.getElementById('agent-tool-timeout')?.value, 10);
+    const maxIter = getIntValue('agent-max-iterations', NaN);
+    const timeout = getIntValue('agent-tool-timeout', NaN);
     if (!isNaN(maxIter) || !isNaN(timeout)) {
         update.agent = {
             max_iterations: isNaN(maxIter) ? undefined : maxIter,
@@ -170,9 +263,9 @@ async function applySettings() {
     }
 
     // MCP
-    const mcpEnabled = document.getElementById('mcp-enabled')?.checked;
-    const mcpHost = document.getElementById('mcp-host')?.value?.trim();
-    const mcpPort = parseInt(document.getElementById('mcp-port')?.value, 10);
+    const mcpEnabled = getCheckedValue('mcp-enabled', !!currentConfig.mcp?.enabled);
+    const mcpHost = getTrimmedValue('mcp-host', '');
+    const mcpPort = getIntValue('mcp-port', NaN);
     const currentMCP = currentConfig.mcp || {};
     update.mcp = {
         ...currentMCP,
@@ -182,13 +275,49 @@ async function applySettings() {
     };
 
     // 知识库
-    const kEnabled = document.getElementById('knowledge-enabled')?.checked;
-    const kBase = document.getElementById('knowledge-base-path')?.value?.trim();
     const currentKnowledge = currentConfig.knowledge || {};
+    const currentEmbedding = currentKnowledge.embedding || {};
+    const currentRetrieval = currentKnowledge.retrieval || {};
+    const currentPostRetrieve = currentRetrieval.post_retrieve || {};
+    const currentIndexing = currentKnowledge.indexing || {};
     update.knowledge = {
         ...currentKnowledge,
-        enabled: typeof kEnabled === 'boolean' ? kEnabled : !!currentKnowledge.enabled,
-        base_path: kBase || currentKnowledge.base_path || 'knowledge_base',
+        enabled: getCheckedValue('knowledge-enabled', !!currentKnowledge.enabled),
+        base_path: getTrimmedValue('knowledge-base-path', currentKnowledge.base_path || 'knowledge_base') || 'knowledge_base',
+        embedding: {
+            ...currentEmbedding,
+            provider: getTrimmedValue('knowledge-embedding-provider', currentEmbedding.provider || 'openai') || 'openai',
+            base_url: getTrimmedValue('knowledge-embedding-base-url', ''),
+            api_key: getTrimmedValue('knowledge-embedding-api-key', ''),
+            model: getTrimmedValue('knowledge-embedding-model', currentEmbedding.model || 'text-embedding-v4') || 'text-embedding-v4',
+        },
+        retrieval: {
+            ...currentRetrieval,
+            top_k: getIntValue('knowledge-retrieval-top-k', currentRetrieval.top_k || 5),
+            similarity_threshold: getFloatValue('knowledge-retrieval-similarity-threshold', currentRetrieval.similarity_threshold ?? 0.4),
+            sub_index_filter: getTrimmedValue('knowledge-retrieval-sub-index-filter', ''),
+            post_retrieve: {
+                ...currentPostRetrieve,
+                prefetch_top_k: getIntValue('knowledge-post-retrieve-prefetch-top-k', currentPostRetrieve.prefetch_top_k || 0),
+                max_context_chars: getIntValue('knowledge-post-retrieve-max-chars', currentPostRetrieve.max_context_chars || 0),
+                max_context_tokens: getIntValue('knowledge-post-retrieve-max-tokens', currentPostRetrieve.max_context_tokens || 0),
+            },
+        },
+        indexing: {
+            ...currentIndexing,
+            chunk_strategy: getTrimmedValue('knowledge-indexing-chunk-strategy', currentIndexing.chunk_strategy || 'markdown_then_recursive') || 'markdown_then_recursive',
+            request_timeout_seconds: getIntValue('knowledge-indexing-request-timeout', currentIndexing.request_timeout_seconds || 120),
+            batch_size: getIntValue('knowledge-indexing-batch-size', currentIndexing.batch_size || 64),
+            prefer_source_file: getCheckedValue('knowledge-indexing-prefer-source-file', !!currentIndexing.prefer_source_file),
+            sub_indexes: csvToList(getTrimmedValue('knowledge-indexing-sub-indexes', listToCsv(currentIndexing.sub_indexes))),
+            chunk_size: getIntValue('knowledge-indexing-chunk-size', currentIndexing.chunk_size || 512),
+            chunk_overlap: getIntValue('knowledge-indexing-chunk-overlap', currentIndexing.chunk_overlap || 50),
+            max_chunks_per_item: getIntValue('knowledge-indexing-max-chunks-per-item', currentIndexing.max_chunks_per_item || 0),
+            max_rpm: getIntValue('knowledge-indexing-max-rpm', currentIndexing.max_rpm || 0),
+            rate_limit_delay_ms: getIntValue('knowledge-indexing-rate-limit-delay-ms', currentIndexing.rate_limit_delay_ms || 300),
+            max_retries: getIntValue('knowledge-indexing-max-retries', currentIndexing.max_retries || 3),
+            retry_delay_ms: getIntValue('knowledge-indexing-retry-delay-ms', currentIndexing.retry_delay_ms || 1000),
+        },
     };
 
     // 多代理
@@ -221,7 +350,8 @@ async function applySettings() {
             throw new Error(err.error || '应用配置失败: ' + response.status);
         }
         showNotification('配置已保存并应用', 'success');
-        await loadConfig();
+        settingsFormDirty = false;
+        await loadConfig({ forceFill: true });
     } catch (error) {
         console.error('应用配置失败:', error);
         showNotification(error.message, 'error');

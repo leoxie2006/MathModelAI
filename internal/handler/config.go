@@ -1230,6 +1230,35 @@ func updateKnowledgeConfig(doc *yaml.Node, cfg config.KnowledgeConfig) {
 	kNode := ensureMap(root, "knowledge")
 	setBoolInMap(kNode, "enabled", cfg.Enabled)
 	setStringInMap(kNode, "base_path", cfg.BasePath)
+
+	embeddingNode := ensureMap(kNode, "embedding")
+	setStringInMap(embeddingNode, "provider", cfg.Embedding.Provider)
+	setStringInMap(embeddingNode, "model", cfg.Embedding.Model)
+	setStringInMap(embeddingNode, "base_url", cfg.Embedding.BaseURL)
+	setStringInMap(embeddingNode, "api_key", cfg.Embedding.APIKey)
+
+	retrievalNode := ensureMap(kNode, "retrieval")
+	setIntInMap(retrievalNode, "top_k", cfg.Retrieval.TopK)
+	setFloatInMap(retrievalNode, "similarity_threshold", cfg.Retrieval.SimilarityThreshold)
+	setStringInMap(retrievalNode, "sub_index_filter", cfg.Retrieval.SubIndexFilter)
+	postNode := ensureMap(retrievalNode, "post_retrieve")
+	setIntInMap(postNode, "prefetch_top_k", cfg.Retrieval.PostRetrieve.PrefetchTopK)
+	setIntInMap(postNode, "max_context_chars", cfg.Retrieval.PostRetrieve.MaxContextChars)
+	setIntInMap(postNode, "max_context_tokens", cfg.Retrieval.PostRetrieve.MaxContextTokens)
+
+	indexingNode := ensureMap(kNode, "indexing")
+	setStringInMap(indexingNode, "chunk_strategy", cfg.Indexing.ChunkStrategy)
+	setIntInMap(indexingNode, "request_timeout_seconds", cfg.Indexing.RequestTimeoutSeconds)
+	setIntInMap(indexingNode, "chunk_size", cfg.Indexing.ChunkSize)
+	setIntInMap(indexingNode, "chunk_overlap", cfg.Indexing.ChunkOverlap)
+	setIntInMap(indexingNode, "max_chunks_per_item", cfg.Indexing.MaxChunksPerItem)
+	setBoolInMap(indexingNode, "prefer_source_file", cfg.Indexing.PreferSourceFile)
+	setIntInMap(indexingNode, "rate_limit_delay_ms", cfg.Indexing.RateLimitDelayMs)
+	setIntInMap(indexingNode, "max_rpm", cfg.Indexing.MaxRPM)
+	setIntInMap(indexingNode, "max_retries", cfg.Indexing.MaxRetries)
+	setIntInMap(indexingNode, "retry_delay_ms", cfg.Indexing.RetryDelayMs)
+	setIntInMap(indexingNode, "batch_size", cfg.Indexing.BatchSize)
+	setStringSliceInMap(indexingNode, "sub_indexes", cfg.Indexing.SubIndexes)
 }
 
 func updateHitlConfig(doc *yaml.Node, cfg config.HitlConfig) {
@@ -1333,8 +1362,21 @@ func setStringInMap(mapNode *yaml.Node, key, value string) {
 	_, valueNode := ensureKeyValue(mapNode, key)
 	valueNode.Kind = yaml.ScalarNode
 	valueNode.Tag = "!!str"
-	valueNode.Style = 0
+	if needsQuotedYAMLString(value) {
+		valueNode.Style = yaml.DoubleQuotedStyle
+	} else {
+		valueNode.Style = 0
+	}
 	valueNode.Value = value
+}
+
+func needsQuotedYAMLString(value string) bool {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "", "~", "null", "true", "false", "on", "off", "yes", "no", "y", "n":
+		return true
+	default:
+		return false
+	}
 }
 
 func setStringSliceInMap(mapNode *yaml.Node, key string, values []string) {
@@ -1420,13 +1462,11 @@ func setFloatInMap(mapNode *yaml.Node, key string, value float64) {
 	valueNode.Kind = yaml.ScalarNode
 	valueNode.Tag = "!!float"
 	valueNode.Style = 0
-	// 对于0.0到1.0之间的值（如 similarity_threshold），使用%.1f确保0.0被明确序列化为"0.0"
-	// 对于其他值，使用%g自动选择最合适的格式
-	if value >= 0.0 && value <= 1.0 {
-		valueNode.Value = fmt.Sprintf("%.1f", value)
-	} else {
-		valueNode.Value = fmt.Sprintf("%g", value)
+	if value == 0 {
+		valueNode.Value = "0.0"
+		return
 	}
+	valueNode.Value = strconv.FormatFloat(value, 'f', -1, 64)
 }
 
 // getExternalMCPTools 获取外部MCP工具列表（公共方法）
